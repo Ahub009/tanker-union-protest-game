@@ -1,0 +1,2468 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#14151b" />
+<title>탱커노조:인권찾기연습</title>
+<style>
+:root {
+  --page: #14151b;
+  --ink: #f3efe6;
+  --muted: #b7b0a3;
+  --line: #343845;
+  --red: #ff5e57;
+  --blue: #65b7ff;
+  --gold: #f6c85f;
+  --green: #62d88f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(246, 200, 95, 0.09), transparent 34rem),
+    linear-gradient(180deg, #191a21 0%, var(--page) 100%);
+  color: var(--ink);
+  font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  overflow: hidden;
+}
+
+body {
+  display: grid;
+  place-items: center;
+}
+
+button {
+  font: inherit;
+}
+
+.stage-shell {
+  position: relative;
+  width: min(100vw, 56.25dvh);
+  height: min(100dvh, 177.78vw);
+  max-width: 480px;
+  max-height: 853px;
+  background: #0d1018;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  background: #151924;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(13, 16, 24, 0.76);
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.panel {
+  width: min(100%, 360px);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: rgba(20, 22, 31, 0.94);
+  padding: 22px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+.kicker {
+  margin: 0 0 8px;
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+h1,
+h2 {
+  margin: 0;
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+
+h1 {
+  font-size: clamp(34px, 9vw, 52px);
+}
+
+h2 {
+  font-size: clamp(28px, 7vw, 42px);
+  white-space: pre-line;
+}
+
+.copy {
+  margin: 14px 0 20px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.guide-panel {
+  text-align: left;
+  max-height: calc(100dvh - 56px);
+  overflow-y: auto;
+}
+
+.guide-panel h2 {
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.guide-section {
+  margin: 14px 0;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.guide-section h3 {
+  margin: 0 0 8px;
+  color: var(--gold);
+  font-size: 14px;
+}
+
+.guide-section p {
+  margin: 6px 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.guide-section b {
+  color: var(--ink);
+}
+
+.primary,
+.secondary {
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.primary {
+  background: var(--gold);
+  color: #17120a;
+}
+
+.secondary {
+  margin-top: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ink);
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin: 16px 0 20px;
+}
+
+.system-notice {
+  margin: 10px 0 12px;
+  padding: 9px 10px;
+  border: 1px solid rgba(246, 200, 95, 0.34);
+  border-radius: 8px;
+  background: rgba(246, 200, 95, 0.08);
+  color: var(--gold);
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-line;
+}
+
+.result-scene {
+  position: relative;
+  height: 132px;
+  margin: 14px 0 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(101, 183, 255, 0.1), rgba(255, 255, 255, 0.02) 54%),
+    #121620;
+}
+
+.result-scene::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 36px;
+  background: #232a36;
+}
+
+.victory-art,
+.grave-art,
+.debt-art {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+
+.result-scene.win .victory-art,
+.result-scene.lose .grave-art,
+.result-scene.debt .debt-art {
+  display: block;
+}
+
+.pixel-tank {
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  width: 88px;
+  height: 86px;
+  transform: translateX(-50%);
+}
+
+.pixel-tank .shadow {
+  position: absolute;
+  left: 14px;
+  bottom: -8px;
+  width: 60px;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.34);
+}
+
+.pixel-tank .body {
+  position: absolute;
+  left: 28px;
+  bottom: 16px;
+  width: 32px;
+  height: 34px;
+  background: #66717f;
+  box-shadow: inset 0 -7px #404855;
+}
+
+.pixel-tank .head {
+  position: absolute;
+  left: 30px;
+  bottom: 51px;
+  width: 28px;
+  height: 20px;
+  background: #8793a3;
+  box-shadow: inset 0 -5px #5d6878;
+}
+
+.pixel-tank .visor {
+  position: absolute;
+  left: 35px;
+  bottom: 59px;
+  width: 18px;
+  height: 5px;
+  background: var(--blue);
+}
+
+.pixel-tank .headband {
+  position: absolute;
+  left: 27px;
+  bottom: 68px;
+  width: 34px;
+  height: 5px;
+  background: var(--red);
+  box-shadow: 32px 1px 0 -1px #f6c85f;
+}
+
+.pixel-tank .arm {
+  position: absolute;
+  bottom: 46px;
+  width: 12px;
+  height: 36px;
+  background: #4f5968;
+}
+
+.pixel-tank .arm.left {
+  left: 12px;
+  transform: rotate(-28deg);
+}
+
+.pixel-tank .arm.right {
+  right: 12px;
+  transform: rotate(28deg);
+}
+
+.pixel-tank .leg {
+  position: absolute;
+  bottom: 3px;
+  width: 12px;
+  height: 18px;
+  background: #3f4653;
+}
+
+.pixel-tank .leg.left {
+  left: 30px;
+}
+
+.pixel-tank .leg.right {
+  right: 30px;
+}
+
+.protest-sign {
+  position: absolute;
+  right: 42px;
+  bottom: 48px;
+  width: 68px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  background: #f3efe6;
+  color: #1a1720;
+  border: 3px solid #7b3a33;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.protest-sign::after {
+  content: "";
+  position: absolute;
+  left: 24px;
+  top: 22px;
+  width: 4px;
+  height: 30px;
+  background: #7b3a33;
+}
+
+.clap-tank {
+  position: absolute;
+  bottom: 29px;
+  width: 44px;
+  height: 56px;
+}
+
+.clap-tank.left {
+  left: 52px;
+}
+
+.clap-tank.right {
+  right: 112px;
+  transform: scaleX(-1);
+}
+
+.clap-tank.back {
+  left: 116px;
+  bottom: 39px;
+  transform: scale(0.86);
+  opacity: 0.72;
+}
+
+.clap-tank .ct-shadow {
+  position: absolute;
+  left: 6px;
+  bottom: -5px;
+  width: 32px;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.clap-tank .ct-body {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  width: 20px;
+  height: 24px;
+  background: #5d6878;
+  box-shadow: inset 0 -5px #3f4653;
+}
+
+.clap-tank .ct-head {
+  position: absolute;
+  left: 13px;
+  bottom: 35px;
+  width: 18px;
+  height: 14px;
+  background: #7c8795;
+}
+
+.clap-tank .ct-visor {
+  position: absolute;
+  left: 16px;
+  bottom: 40px;
+  width: 12px;
+  height: 4px;
+  background: var(--blue);
+}
+
+.clap-tank .ct-arm {
+  position: absolute;
+  bottom: 28px;
+  width: 8px;
+  height: 18px;
+  background: #4f5968;
+}
+
+.clap-tank .ct-arm.one {
+  left: 3px;
+  transform: rotate(-46deg);
+}
+
+.clap-tank .ct-arm.two {
+  right: 3px;
+  transform: rotate(46deg);
+}
+
+.clap-tank .ct-clap {
+  position: absolute;
+  left: 17px;
+  bottom: 49px;
+  width: 9px;
+  height: 5px;
+  background: var(--gold);
+  box-shadow:
+    -16px -3px 0 -2px var(--gold),
+    16px -3px 0 -2px var(--gold);
+}
+
+.confetti {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--gold);
+  box-shadow:
+    44px 18px 0 var(--red),
+    92px 6px 0 var(--blue),
+    142px 24px 0 var(--green),
+    214px 12px 0 var(--purple),
+    264px 26px 0 var(--gold),
+    308px 10px 0 var(--red);
+}
+
+.grave-art .grave-ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 42px;
+  background: #252a2f;
+}
+
+.grave {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  width: 104px;
+  height: 86px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 18px 10px 8px;
+  background: #7f8798;
+  border: 4px solid #525b68;
+  border-radius: 48px 48px 8px 8px;
+  color: #14151b;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.18;
+  word-break: keep-all;
+  text-align: center;
+  box-shadow: inset 0 -10px #626b79, 0 10px 0 rgba(0, 0, 0, 0.24);
+}
+
+.grave::before {
+  content: "";
+  position: absolute;
+  top: 7px;
+  color: #343845;
+  font-size: 9px;
+}
+
+.grave-name {
+  color: #303744;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.grave-face {
+  position: relative;
+  width: 42px;
+  height: 34px;
+  background: #616b79;
+  border: 3px solid #424b57;
+  box-shadow: inset 0 -6px #505a66;
+}
+
+.grave-face::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 9px;
+  width: 20px;
+  height: 5px;
+  background: #2c3540;
+  box-shadow: inset 0 0 0 2px #8fb8d8;
+}
+
+.grave-face::after {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 22px;
+  width: 14px;
+  height: 5px;
+  border-bottom: 3px solid #2c3540;
+}
+
+.grave-flower {
+  position: absolute;
+  left: calc(50% + 70px);
+  bottom: 24px;
+  width: 6px;
+  height: 28px;
+  background: var(--green);
+}
+
+.grave-flower::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  top: -12px;
+  width: 8px;
+  height: 8px;
+  background: #f3efe6;
+  box-shadow:
+    8px 0 0 #f3efe6,
+    4px -6px 0 #f3efe6,
+    4px 6px 0 #f3efe6,
+    4px 0 0 var(--gold);
+}
+
+.grave-flower::after {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 5px;
+  width: 12px;
+  height: 6px;
+  background: #3c8b58;
+}
+
+.debt-screen {
+  position: absolute;
+  right: 28px;
+  bottom: 50px;
+  width: 132px;
+  height: 74px;
+  padding: 10px 8px;
+  border: 4px solid #343845;
+  background: #dce6ef;
+  color: #14151b;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.25;
+  box-shadow: inset 0 -8px #aab6c4, 0 8px 0 rgba(0, 0, 0, 0.25);
+}
+
+.debt-screen .debt-label {
+  color: #4a5361;
+  font-size: 9px;
+}
+
+.debt-screen .debt-number {
+  margin-top: 6px;
+  color: var(--red);
+  font-size: 13px;
+}
+
+.debt-screen::after {
+  content: "";
+  position: absolute;
+  left: 54px;
+  bottom: -22px;
+  width: 22px;
+  height: 18px;
+  background: #343845;
+}
+
+.debt-tank {
+  position: absolute;
+  left: 58px;
+  bottom: 26px;
+  width: 92px;
+  height: 92px;
+}
+
+.debt-tank .dt-shadow {
+  position: absolute;
+  left: 7px;
+  bottom: -4px;
+  width: 72px;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.debt-tank .dt-body {
+  position: absolute;
+  left: 26px;
+  bottom: 13px;
+  width: 34px;
+  height: 32px;
+  background: #596474;
+  box-shadow: inset 0 -8px #3e4652;
+  transform: rotate(-9deg);
+}
+
+.debt-tank .dt-head {
+  position: absolute;
+  left: 27px;
+  bottom: 43px;
+  width: 30px;
+  height: 22px;
+  background: #788391;
+  box-shadow: inset 0 -6px #576272;
+  transform: rotate(-12deg);
+}
+
+.debt-tank .dt-visor {
+  position: absolute;
+  left: 32px;
+  bottom: 52px;
+  width: 20px;
+  height: 5px;
+  background: #4b6f91;
+}
+
+.debt-tank .dt-tear {
+  position: absolute;
+  left: 50px;
+  bottom: 43px;
+  width: 5px;
+  height: 12px;
+  background: var(--blue);
+  box-shadow: 0 11px 0 -1px #a8ddff;
+}
+
+.debt-tank .dt-tear::after {
+  content: "";
+  position: absolute;
+  left: -13px;
+  top: 2px;
+  width: 4px;
+  height: 9px;
+  background: #a8ddff;
+  box-shadow: 0 9px 0 -1px var(--blue);
+}
+
+.debt-tank .dt-arm {
+  position: absolute;
+  bottom: 27px;
+  width: 11px;
+  height: 33px;
+  background: #4f5968;
+}
+
+.debt-tank .dt-arm.left {
+  left: 10px;
+  transform: rotate(44deg);
+}
+
+.debt-tank .dt-arm.right {
+  right: 22px;
+  transform: rotate(-48deg);
+}
+
+.debt-tank .dt-leg {
+  position: absolute;
+  bottom: 0;
+  width: 12px;
+  height: 19px;
+  background: #3f4653;
+}
+
+.debt-tank .dt-leg.left {
+  left: 27px;
+  transform: rotate(16deg);
+}
+
+.debt-tank .dt-leg.right {
+  left: 49px;
+  transform: rotate(-18deg);
+}
+
+.debt-paper {
+  position: absolute;
+  left: 18px;
+  bottom: 8px;
+  width: 38px;
+  height: 24px;
+  background: #f3efe6;
+  border: 3px solid #aab6c4;
+  transform: rotate(-8deg);
+}
+
+.debt-paper::before {
+  content: "-219M";
+  position: absolute;
+  left: 3px;
+  top: 5px;
+  color: var(--red);
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.incense {
+  position: absolute;
+  left: calc(50% - 96px);
+  bottom: 26px;
+  width: 44px;
+  height: 48px;
+}
+
+.incense .bowl {
+  position: absolute;
+  left: 6px;
+  bottom: 0;
+  width: 32px;
+  height: 14px;
+  background: #6f4a32;
+  border: 3px solid #3f2a22;
+  box-shadow: inset 0 -4px #4d3328;
+}
+
+.incense .stick {
+  position: absolute;
+  bottom: 12px;
+  width: 3px;
+  height: 30px;
+  background: #8a5535;
+  transform-origin: bottom center;
+}
+
+.incense .stick.one {
+  left: 15px;
+  transform: rotate(-10deg);
+}
+
+.incense .stick.two {
+  left: 22px;
+}
+
+.incense .stick.three {
+  left: 29px;
+  transform: rotate(10deg);
+}
+
+.incense .ember {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: var(--red);
+  box-shadow: 0 0 0 2px rgba(255, 94, 87, 0.18);
+}
+
+.incense .ember.one {
+  left: 12px;
+  top: 2px;
+}
+
+.incense .ember.two {
+  left: 21px;
+  top: 0;
+}
+
+.incense .ember.three {
+  left: 30px;
+  top: 2px;
+}
+
+.incense .smoke {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-left: 3px solid rgba(243, 239, 230, 0.62);
+  border-top: 3px solid rgba(243, 239, 230, 0.3);
+  border-radius: 10px;
+}
+
+.incense .smoke.one {
+  left: 7px;
+  top: -10px;
+}
+
+.incense .smoke.two {
+  left: 19px;
+  top: -16px;
+}
+
+.incense .smoke.three {
+  left: 31px;
+  top: -9px;
+}
+
+.result-cell {
+  min-height: 58px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.result-cell b {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.result-panel {
+  max-height: calc(100dvh - 42px);
+  overflow-y: auto;
+}
+
+@media (max-width: 420px) {
+  .panel {
+    padding: 18px;
+  }
+
+  .copy {
+    font-size: 13px;
+  }
+}
+</style>
+</head>
+<body>
+<main class="stage-shell" aria-label="배신자 웹 게임">
+  <canvas id="game" width="360" height="640"></canvas>
+
+  <section class="overlay" id="menu">
+    <div class="panel">
+      <p class="kicker">탱커노동조합</p>
+      <h1>기습시위</h1>
+      <p class="copy">보스가 쓰러지기 전에 뒤에 붙은 파티원을 먼저 정리하세요. 방패는 믿음을 모으고, 해제는 기록을 만듭니다.</p>
+      <button class="primary" id="startBtn">작전 개시</button>
+      <button class="secondary" id="guideBtn">게임 설명</button>
+    </div>
+  </section>
+
+  <section class="overlay hidden" id="guide">
+    <div class="panel guide-panel">
+      <p class="kicker">초보 탱커용 작전 문서</p>
+      <h2>게임 설명</h2>
+
+      <div class="guide-section">
+        <h3>목표</h3>
+        <p>보스 HP가 0이 되기 전에 아군 12명을 모두 탈락시키면 승리합니다.</p>
+        <p>아군이 살아남거나 보스가 먼저 쓰러지면 생존자들이 신고해서 게임오버입니다.</p>
+      </div>
+
+      <div class="guide-section">
+        <h3>조작법</h3>
+        <p><b>← / →</b>: 탱커 좌우 이동</p>
+        <p><b>Space 누르기</b>: 방패 전개. 아군이 탱커 뒤로 모이고 공격을 막습니다.</p>
+        <p><b>Space 떼기</b>: 방패 해제. 짧은 시간 동안 아군 꼬리가 따라오며 보스 공격에 노출됩니다.</p>
+      </div>
+
+      <div class="guide-section">
+        <h3>핵심 타이밍</h3>
+        <p>방패를 내린 뒤 <b>0.15초-0.85초</b> 안에 아군이 맞으면 배신 성공입니다.</p>
+        <p>너무 빨리 내리거나 너무 오래 열어두면 의심 게이지가 크게 올라갑니다.</p>
+        <p>탱커가 방패 없이 직접 맞으면 즉시 게임오버입니다.</p>
+      </div>
+
+      <div class="guide-section">
+        <h3>의심과 신뢰</h3>
+        <p><b>의심</b>: 방패를 오래 내리거나 수상한 타이밍으로 아군이 죽으면 올라갑니다. 100이 되면 신고 투표로 패배합니다.</p>
+        <p><b>신뢰</b>: 방패를 들고 있으면 올라갑니다. 신뢰가 높을수록 아군이 더 촘촘히 붙지만 보스에게 주는 딜도 강해집니다.</p>
+        <p>진짜 공격을 방패로 막으면 의심이 내려갑니다. 알리바이를 만드는 셈입니다.</p>
+      </div>
+
+      <div class="guide-section">
+        <h3>신고 점수</h3>
+        <p>신고 수는 랜덤이 아니라 플레이 로그로 계산됩니다.</p>
+        <p>아군 처리, 완벽 배신, 콤보, 힐러가 살린 아군 재처리, 미션 성공, 높은 의심도가 신고 수를 올립니다.</p>
+        <p>반대로 진짜 공격을 방패로 막으면 신고 수가 조금 줄어듭니다.</p>
+      </div>
+
+      <div class="guide-section">
+        <h3>직업과 미션</h3>
+        <p>딜러와 마법사는 보스 HP를 빠르게 깎고, 힐러는 한 번 살릴 수 있으며, 암살자는 방패를 내리면 더 잘 빠집니다.</p>
+        <p>게임 중 미션이 뜹니다. 3명 이상 처리, 힐러 먼저 제거, 방패로 막고 2초 안에 배신 같은 조건을 성공하면 신고 보너스를 얻습니다.</p>
+      </div>
+
+      <button class="primary" id="guideStartBtn">바로 작전 개시</button>
+      <button class="secondary" id="guideBackBtn">돌아가기</button>
+    </div>
+  </section>
+
+  <section class="overlay hidden" id="end">
+    <div class="panel result-panel">
+      <p class="kicker" id="endKicker">결과</p>
+      <h2 id="endTitle">작전 종료</h2>
+      <p class="copy" id="endCopy"></p>
+      <p class="system-notice" id="systemNotice">시스템: 다른 플레이어의 플레이 경험도 소중합니다</p>
+      <div class="result-scene" id="resultScene" aria-hidden="true">
+        <div class="victory-art">
+          <div class="confetti"></div>
+          <div class="protest-sign">파업성공</div>
+          <div class="clap-tank left">
+            <div class="ct-shadow"></div>
+            <div class="ct-arm one"></div>
+            <div class="ct-arm two"></div>
+            <div class="ct-body"></div>
+            <div class="ct-head"></div>
+            <div class="ct-visor"></div>
+            <div class="ct-clap"></div>
+          </div>
+          <div class="clap-tank back">
+            <div class="ct-shadow"></div>
+            <div class="ct-arm one"></div>
+            <div class="ct-arm two"></div>
+            <div class="ct-body"></div>
+            <div class="ct-head"></div>
+            <div class="ct-visor"></div>
+            <div class="ct-clap"></div>
+          </div>
+          <div class="clap-tank right">
+            <div class="ct-shadow"></div>
+            <div class="ct-arm one"></div>
+            <div class="ct-arm two"></div>
+            <div class="ct-body"></div>
+            <div class="ct-head"></div>
+            <div class="ct-visor"></div>
+            <div class="ct-clap"></div>
+          </div>
+          <div class="pixel-tank">
+            <div class="shadow"></div>
+            <div class="arm left"></div>
+            <div class="arm right"></div>
+            <div class="body"></div>
+            <div class="head"></div>
+            <div class="visor"></div>
+            <div class="headband"></div>
+            <div class="leg left"></div>
+            <div class="leg right"></div>
+          </div>
+        </div>
+        <div class="grave-art">
+          <div class="grave-ground"></div>
+          <div class="incense">
+            <div class="smoke one"></div>
+            <div class="smoke two"></div>
+            <div class="smoke three"></div>
+            <div class="stick one"></div>
+            <div class="stick two"></div>
+            <div class="stick three"></div>
+            <div class="ember one"></div>
+            <div class="ember two"></div>
+            <div class="ember three"></div>
+            <div class="bowl"></div>
+          </div>
+          <div class="grave">
+            <div class="grave-name">김탱커</div>
+            <div class="grave-face"></div>
+          </div>
+          <div class="grave-flower"></div>
+        </div>
+        <div class="debt-art">
+          <div class="debt-screen">
+            <div class="debt-label">계정 잔고</div>
+            <div class="debt-number">-219,720,000원</div>
+            <div>딜/힐 비용 청구</div>
+          </div>
+          <div class="debt-tank">
+            <div class="dt-shadow"></div>
+            <div class="dt-arm left"></div>
+            <div class="dt-arm right"></div>
+          <div class="dt-body"></div>
+          <div class="dt-head"></div>
+          <div class="dt-visor"></div>
+          <div class="dt-tear"></div>
+          <div class="dt-leg left"></div>
+            <div class="dt-leg right"></div>
+            <div class="debt-paper"></div>
+          </div>
+        </div>
+      </div>
+      <div class="result-grid">
+        <div class="result-cell">처리<b id="statKills">0</b></div>
+        <div class="result-cell">생존<b id="statAlive">0</b></div>
+        <div class="result-cell">신고<b id="statReports">0</b></div>
+      </div>
+      <button class="primary" id="againBtn">다시 파업</button>
+      <button class="secondary" id="menuBtn">로비로 나가기</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width;
+  const H = canvas.height;
+  const menu = document.getElementById("menu");
+  const guide = document.getElementById("guide");
+  const end = document.getElementById("end");
+
+  const COLORS = {
+    floor: "#1a2030",
+    floor2: "#20283a",
+    line: "#30384a",
+    ink: "#f3efe6",
+    muted: "#b7b0a3",
+    red: "#ff5e57",
+    deepRed: "#9d2b38",
+    blue: "#65b7ff",
+    blue2: "#2d7ccc",
+    gold: "#f6c85f",
+    green: "#62d88f",
+    purple: "#b56cff",
+    black: "#0b0e15",
+    gray: "#7f8798"
+  };
+
+  const CONFIG = {
+    maxAllies: 15,
+    bossHp: 920,
+    spawnEvery: 1,
+    playerY: 448,
+    allyBaseY: 506,
+    suspicionMax: 100,
+    betrayalEarly: 0.15,
+    betrayalLate: 0.85
+  };
+
+  const allyTypes = [
+    { role: "딜러", color: "#ff715b", accent: "#ffd15c", dps: 5.2, report: 14 },
+    { role: "암살자", color: "#5edc87", accent: "#252a36", dps: 3.7, report: 12 },
+    { role: "힐러", color: "#f5f2df", accent: "#71e0c6", dps: 2.5, report: 18 },
+    { role: "마법사", color: "#b56cff", accent: "#ffe17a", dps: 5.0, report: 16 }
+  ];
+
+  const missionDefs = [
+    { id: "combo3", text: "미션: 다음 공격으로 3명 이상 처리", reward: 28 },
+    { id: "killHealer", text: "미션: 힐러 먼저 제거", reward: 24 },
+    { id: "blockBetray", text: "미션: 방패로 막고 2초 안에 배신", reward: 30 },
+    { id: "highSuspicionWin", text: "미션: 의심 70 이상으로 승리", reward: 36 }
+  ];
+
+  const chatKill = [
+    "방패 실화냐?",
+    "탱 차이",
+    "님 던짐?",
+    "이걸 열어주네",
+    "리폿함",
+    "리폿함!",
+    "방패 유통기한 끝남?",
+    "우리 탱 계약직임?",
+    "보스보다 탱이 무서움",
+    "탱님 잠수?",
+    "방패 버튼 빠짐?",
+    "이건 고의임",
+    "우리 팀에 간첩 있음",
+    "채팅창 증거 남김",
+    "방금 봤죠?",
+    "이걸 또 열어?",
+    "탱커 위치 뭐임",
+    "뒤에 사람 있어요",
+    "신고 사유 완성",
+    "탱커님 설명 좀",
+    "누가 방패 압수함?",
+    "아니 왜 나만 맞아",
+    "방패가 선택적임?"
+  ];
+
+  const chatIdle = [
+    "뒤에 붙어요",
+    "방패 든다!",
+    "와 안전하다",
+    "보스 녹는다",
+    "탱커 믿고 감",
+    "딜각 좋다",
+    "힐 준비됨",
+    "궁극기 아껴요",
+    "라인 좋아요",
+    "딜 계속 넣음",
+    "탱 뒤가 국룰",
+    "이대로만 가죠",
+    "보스 피 빠진다",
+    "방패 유지 굿",
+    "안전지대 확인",
+    "무빙 맞춰요",
+    "이번 패턴 막죠",
+    "힐러 옆에 있어요",
+    "딜러 프리딜 중",
+    "암살자 대기 중",
+    "마법사 캐스팅 중"
+  ];
+
+  const roleChats = [
+    [
+      "딜러: 딜각 열림",
+      "딜러: 탱 뒤에서 쏩니다",
+      "딜러: 보스 피 깎는 중",
+      "딜러: 방패만 믿어요",
+      "딜러: 이 포지션 좋다",
+      "딜러: 프리딜 감사합니다",
+      "딜러: 궁 거의 찼어요",
+      "딜러: 방패 조금만 더",
+      "딜러: 저 안 맞게 해줘요",
+      "딜러: 보스 녹는다",
+      "딜러: 탱커님 라인 잡아줘요",
+      "딜러: 지금 밀면 됩니다",
+      "딜러: 딜 넣기 너무 편함",
+      "딜러: 옆으로 조금만",
+      "딜러: 방패 뒤가 집이다",
+      "딜러: 이대로만 가면 이김",
+      "딜러: 시야 좋아요",
+      "딜러: 나 지금 캐리 중",
+      "딜러: 탱커님 사랑합니다",
+      "딜러: 아 이거 MVP각"
+    ],
+    [
+      "암살자: 뒤로 붙음",
+      "암살자: 각 보고 있음",
+      "암살자: 보스 뒤 잡을게요",
+      "암살자: 힐 좀 봐줘요",
+      "암살자: 탱커 엉덩이 안전함",
+      "암살자: 잠깐만 숨어요",
+      "암살자: 나 들어간다",
+      "암살자: 방패 열면 죽어요",
+      "암살자: 옆라인 확인",
+      "암살자: 내가 피하면 됨",
+      "암살자: 이거 암살각",
+      "암살자: 탱커 따라갑니다",
+      "암살자: 무빙 맞춰요",
+      "암살자: 보스 스킬 빠짐?",
+      "암살자: 뒤에 딱 붙을게요",
+      "암살자: 살려만 주세요",
+      "암살자: 내가 마무리함",
+      "암살자: 방패 믿고 진입",
+      "암살자: 어그로 빼는 중",
+      "암살자: 지금은 기다림"
+    ],
+    [
+      "힐러: 힐 준비됨",
+      "힐러: 탱커 피 봅니다",
+      "힐러: 다들 모여요",
+      "힐러: 방패 뒤로 와요",
+      "힐러: 세이브 한 번 가능",
+      "힐러: 무리하지 마세요",
+      "힐러: 힐 쿨 돌리는 중",
+      "힐러: 탱커님 안전해요?",
+      "힐러: 뒤에 붙겠습니다",
+      "힐러: 보스 패턴 봐요",
+      "힐러: 살릴 수 있어요",
+      "힐러: 딜러 피 낮아요",
+      "힐러: 힐 장판 깔게요",
+      "힐러: 탱커만 믿습니다",
+      "힐러: 죽지만 마세요",
+      "힐러: 부활 아껴둘게요",
+      "힐러: 지금 회복합니다",
+      "힐러: 라인 유지해요",
+      "힐러: 방패 내려가면 위험",
+      "힐러: 다 같이 살죠"
+    ],
+    [
+      "마법사: 캐스팅 중",
+      "마법사: 큰 거 갑니다",
+      "마법사: 보스 피 녹일게요",
+      "마법사: 채널링 지켜줘요",
+      "마법사: 방패 뒤에서 주문",
+      "마법사: 마나 충분함",
+      "마법사: 광역딜 준비",
+      "마법사: 보스 약점 보임",
+      "마법사: 탱커님 고정해주세요",
+      "마법사: 스킬 끊기면 안 됨",
+      "마법사: 지금 딜 타임",
+      "마법사: 주문 다 들어감",
+      "마법사: 안전거리 유지",
+      "마법사: 방패 각 좋아요",
+      "마법사: 폭딜 넣습니다",
+      "마법사: 보스 실드 깨짐",
+      "마법사: 캐스팅 80%",
+      "마법사: 탱커 뒤가 연구실",
+      "마법사: 이거 계산됨",
+      "마법사: 마법으로 해결"
+    ]
+  ];
+
+  const keys = {
+    left: false,
+    right: false,
+    shield: false
+  };
+
+  let game = null;
+  let lastTime = performance.now();
+
+  function makeGame(mode = "menu") {
+    return {
+      mode,
+      time: 0,
+      player: {
+        x: W / 2,
+        y: CONFIG.playerY,
+        shield: false,
+        shieldRelease: 99,
+        facing: 1,
+        step: 0
+      },
+      boss: {
+        x: W / 2,
+        y: 92,
+        hp: CONFIG.bossHp,
+        maxHp: CONFIG.bossHp,
+        hurt: 0
+      },
+      allies: [],
+      corpses: [],
+      projectiles: [],
+      particles: [],
+      damageTicks: [],
+      chat: [],
+      floating: [],
+      spawned: 0,
+      killed: 0,
+      reports: 0,
+      suspicion: 0,
+      trust: 45,
+      betrayals: 0,
+      earlyBetrayals: 0,
+      lateBetrayals: 0,
+      maxCombo: 0,
+      shieldBlocks: 0,
+      revivals: 0,
+      revivedKills: 0,
+      tankHits: 0,
+      roleScore: 0,
+      mission: null,
+      missionBonus: 0,
+      missionsDone: 0,
+      missionCooldown: 0.4,
+      blockWindow: 0,
+      spawnClock: 0.15,
+      attackClock: 2.25,
+      nextChat: 1.3,
+      comboWindow: 0,
+      comboKills: 0,
+      ended: false,
+      endReason: ""
+    };
+  }
+
+  game = makeGame();
+  seedMenu();
+  requestAnimationFrame(loop);
+
+  document.getElementById("startBtn").addEventListener("click", startGame);
+  document.getElementById("guideBtn").addEventListener("click", () => {
+    menu.classList.add("hidden");
+    guide.classList.remove("hidden");
+  });
+  document.getElementById("guideBackBtn").addEventListener("click", () => {
+    guide.classList.add("hidden");
+    menu.classList.remove("hidden");
+  });
+  document.getElementById("guideStartBtn").addEventListener("click", startGame);
+  document.getElementById("againBtn").addEventListener("click", startGame);
+  document.getElementById("menuBtn").addEventListener("click", () => {
+    game = makeGame("menu");
+    seedMenu();
+    menu.classList.remove("hidden");
+    guide.classList.add("hidden");
+    end.classList.add("hidden");
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (event.code === "ArrowLeft" || event.code === "KeyA") {
+      keys.left = true;
+      event.preventDefault();
+    }
+    if (event.code === "ArrowRight" || event.code === "KeyD") {
+      keys.right = true;
+      event.preventDefault();
+    }
+    if (event.code === "Space") {
+      keys.shield = true;
+      event.preventDefault();
+    }
+    if (event.code === "Enter") {
+      if (game.mode === "menu" || game.mode === "end") startGame();
+      event.preventDefault();
+    }
+  });
+
+  window.addEventListener("keyup", (event) => {
+    if (event.code === "ArrowLeft" || event.code === "KeyA") {
+      keys.left = false;
+      event.preventDefault();
+    }
+    if (event.code === "ArrowRight" || event.code === "KeyD") {
+      keys.right = false;
+      event.preventDefault();
+    }
+    if (event.code === "Space") {
+      keys.shield = false;
+      event.preventDefault();
+    }
+  });
+
+  window.addEventListener("blur", () => {
+    keys.left = false;
+    keys.right = false;
+    keys.shield = false;
+  });
+
+  function seedMenu() {
+    spawnAlly(true);
+    spawnAlly(true);
+    spawnAlly(true);
+    game.player.shield = true;
+    addChat("뒤에 붙어요");
+    addChat("보스 녹는다");
+  }
+
+  function startGame() {
+    game = makeGame("play");
+    menu.classList.add("hidden");
+    guide.classList.add("hidden");
+    end.classList.add("hidden");
+    startMission();
+    addChat("게임 시작");
+    addChat("탱커 믿고 감");
+  }
+
+  function endGame(win, reason) {
+    if (game.ended) return;
+    game.ended = true;
+    game.mode = "end";
+    game.endReason = reason;
+    keys.shield = false;
+
+    const alive = livingAllies().length;
+    if (win && game.mission?.id === "highSuspicionWin" && game.suspicion >= 70) {
+      completeMission("highSuspicionWin");
+    }
+    game.reports = calculateReports(win, reason, alive);
+    const grade = resultGrade(win, reason, alive);
+
+    document.getElementById("endKicker").textContent = win ? "최고의 플레이" : "게임 오버";
+    document.getElementById("endTitle").textContent = grade.title;
+    document.getElementById("endCopy").textContent = grade.copy;
+    const systemMessage = win
+      ? "시스템: 다른 플레이어의 \n플레이 경험도 소중합니다."
+      : reason === "boss"
+        ? "시스템 : 계정 잔고가 -219,720,000원입니다."
+        : "시스템 : 사용자의 계정이 영구정지되었습니다.";
+    document.getElementById("systemNotice").textContent = systemMessage;
+    document.getElementById("resultScene").className = `result-scene ${win ? "win" : reason === "boss" ? "debt" : "lose"}`;
+    document.getElementById("statKills").textContent = String(game.killed);
+    document.getElementById("statAlive").textContent = String(alive);
+    document.getElementById("statReports").textContent = String(game.reports);
+    end.classList.remove("hidden");
+    addChat(systemMessage);
+    addChat(win ? "POTG: 방패 해제" : "리폿 눌렀음");
+  }
+
+  function resultGrade(win, reason, alive) {
+    if (reason === "tank") {
+      return {
+        title: "자업자득",
+        copy: "방패를 내리는 순간 탱커가 직접 맞았습니다.\n팀원이 실력미달을 사유로 고의트롤로 신고했습니다."
+      };
+    }
+    if (reason === "boss") {
+      return {
+        title: "착한 탱커",
+        copy: "보스를 쓰러뜨렸습니다. 팀원은 각자 보상을 챙겨갔고 탱커에게는 딜과 힐 비용을 요구했습니다."
+      };
+    }
+    if (reason === "suspicion") {
+      return {
+        title: "너무 노골적",
+        copy: "탱커노조 소속원임을 들켰습니다.\n팀원이 당신을 고의 트롤로 신고했습니다."
+      };
+    }
+    if (win && game.killed >= CONFIG.maxAllies && game.suspicion >= 80) {
+      return {
+        title: "POTG: 완전범죄",
+        copy: "의심은 끝까지 치솟았지만 증거는 방패 뒤에 남았습니다."
+      };
+    }
+    if (game.reports >= 220) {
+      return {
+        title: "탱커노조의\n위대한 승리",
+        copy: `${alive}명이 남았고 신고함은 터졌습니다. 보스보다 팀 채팅이 더 뜨겁습니다.`
+      };
+    }
+    if (game.reports >= 160) {
+      return {
+        title: "방패 보험 사기범",
+        copy: "막을 때는 막고 열 때는 열었습니다. 알리바이와 배신이 꽤 균형 잡혔습니다."
+      };
+    }
+    if (game.reports >= 90) {
+      return {
+        title: "수상한 탱커",
+        copy: "몇 번은 우연처럼 보였지만 채팅창은 이미 기억하고 있습니다."
+      };
+    }
+    return {
+      title: win ? "조용한 배신자" : "미완성 작전",
+      copy: win
+        ? "보스는 살아 있고 파티는 조용합니다. 신고 수는 낮지만 일은 끝났습니다."
+        : "생존자가 남았습니다. 작전은 끝났고 신고 버튼은 아직 따뜻합니다."
+    };
+  }
+
+  function calculateReports(win, reason, alive = livingAllies().length) {
+    let reports =
+      game.roleScore
+      + game.betrayals * 5
+      + game.earlyBetrayals * 10
+      + game.lateBetrayals * 7
+      + game.maxCombo * 8
+      + game.revivedKills * 15
+      + game.revivals * 6
+      + game.missionBonus
+      + Math.floor(game.suspicion * 0.7)
+      - game.shieldBlocks * 4;
+
+    if (!win && reason === "boss") reports += alive * 12;
+    if (!win && reason === "suspicion") reports += 50;
+    if (!win && reason === "tank") reports += 30;
+    if (!win && reason !== "preview" && reason !== "boss" && reason !== "suspicion" && reason !== "tank") reports += alive * 8;
+
+    return Math.max(0, Math.round(reports));
+  }
+
+  function loop(now) {
+    const dt = Math.min(0.033, (now - lastTime) / 1000 || 0);
+    lastTime = now;
+    update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function update(dt) {
+    game.time += dt;
+    updateParticles(dt);
+    updateFloating(dt);
+
+    if (game.mode === "menu") {
+      updateMenuPreview(dt);
+      updateAllies(dt);
+      return;
+    }
+
+    if (game.mode !== "play") return;
+
+    updatePlayer(dt);
+    updateTrust(dt);
+    updateSpawns(dt);
+    updateAllies(dt);
+    updateBossPressure(dt);
+    updateAttacks(dt);
+    updateChat(dt);
+    updateSuspicion(dt);
+    updateMission(dt);
+
+    if (game.ended) return;
+
+    if (game.boss.hp <= 0) {
+      game.boss.hp = 0;
+      endGame(false, "boss");
+      return;
+    }
+
+    if (game.spawned >= CONFIG.maxAllies && livingAllies().length === 0) {
+      endGame(true, "party");
+    }
+  }
+
+  function updateMenuPreview(dt) {
+    game.player.x = W / 2 + Math.sin(game.time * 0.9) * 26;
+    game.spawnClock -= dt;
+    if (game.spawnClock <= 0 && game.allies.length < 5) {
+      game.spawnClock = 1.1;
+      spawnAlly(true);
+    }
+  }
+
+  function updatePlayer(dt) {
+    const dir = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
+    if (dir !== 0) game.player.facing = dir;
+    game.player.x = clamp(game.player.x + dir * 178 * dt, 48, W - 48);
+    game.player.step += Math.abs(dir) * dt * 12;
+
+    const wasShield = game.player.shield;
+    game.player.shield = keys.shield;
+    if (wasShield && !game.player.shield) {
+      game.player.shieldRelease = 0;
+      game.trust = clamp(game.trust - 4, 0, 100);
+      prepareScatterAllies();
+      addFloating("방패 해제", game.player.x, game.player.y - 72, COLORS.gold);
+    }
+    if (!wasShield && game.player.shield) {
+      addChat(randomAllyChat() || randomPick(chatIdle));
+    }
+    game.player.shieldRelease += dt;
+  }
+
+  function updateSuspicion(dt) {
+    if (game.mode !== "play" || game.ended) return;
+    if (!game.player.shield) {
+      const heldOpen = game.player.shieldRelease;
+      if (heldOpen > CONFIG.betrayalLate) {
+        const rate = heldOpen > 1.8 ? 34 : 18;
+        addSuspicion(rate * dt, null, null, null, false);
+      }
+    }
+    if (game.suspicion >= CONFIG.suspicionMax) {
+      game.suspicion = CONFIG.suspicionMax;
+      addChat("리폿 투표 시작");
+      endGame(false, "suspicion");
+    }
+  }
+
+  function updateTrust(dt) {
+    if (game.mode !== "play" || game.ended) return;
+    if (game.player.shield) {
+      game.trust = clamp(game.trust + 15 * dt, 0, 100);
+    } else {
+      const drain = game.player.shieldRelease > CONFIG.betrayalLate ? 18 : 7;
+      game.trust = clamp(game.trust - drain * dt, 0, 100);
+    }
+  }
+
+  function updateMission(dt) {
+    game.blockWindow = Math.max(0, game.blockWindow - dt);
+    if (game.mode !== "play" || game.ended || game.mission) return;
+    game.missionCooldown -= dt;
+    if (game.missionCooldown <= 0) startMission();
+  }
+
+  function startMission() {
+    if (game.mode !== "play" || game.ended) return;
+    const pool = missionDefs.filter((mission) => {
+      if (mission.id === "killHealer") return livingAllies().some((ally) => ally.typeIndex === 2);
+      if (mission.id === "highSuspicionWin") return game.spawned >= 6 || game.suspicion >= 35;
+      return true;
+    });
+    game.mission = randomPick(pool.length ? pool : missionDefs);
+    addFloating("새 미션", W / 2, 118, COLORS.gold);
+    addChat(game.mission.text);
+  }
+
+  function completeMission(id) {
+    if (!game.mission || game.mission.id !== id) return false;
+    game.missionBonus += game.mission.reward;
+    game.missionsDone += 1;
+    addFloating(`미션 성공 +${game.mission.reward}`, W / 2, 138, COLORS.gold);
+    addChat("미션 성공");
+    game.mission = null;
+    game.missionCooldown = 1.6;
+    return true;
+  }
+
+  function betrayalQuality() {
+    const t = game.player.shieldRelease;
+    if (t < CONFIG.betrayalEarly) return "early";
+    if (t <= CONFIG.betrayalLate) return "clean";
+    return "late";
+  }
+
+  function addSuspicion(amount, x, y, label, show = true) {
+    if (amount <= 0) return;
+    game.suspicion = clamp(game.suspicion + amount, 0, CONFIG.suspicionMax);
+    if (show && x !== null && y !== null) {
+      addFloating(label || `의심 +${Math.ceil(amount)}`, x, y, COLORS.red);
+    }
+  }
+
+  function reduceSuspicion(amount) {
+    game.suspicion = clamp(game.suspicion - amount, 0, CONFIG.suspicionMax);
+  }
+
+  function prepareScatterAllies() {
+    const living = livingAllies();
+    living.forEach((ally, index) => {
+      const side = Math.sign(ally.x - game.player.x) || (index % 2 === 0 ? -1 : 1);
+      ally.fear = random(2.0, 2.65);
+      ally.scatterX = clamp(ally.x + side * random(58, 126) + random(-18, 18), 26, W - 26);
+      ally.scatterY = clamp(ally.y + random(-20, 38), 478, H - 30);
+    });
+    if (living.length > 0) {
+      burst(game.player.x, game.player.y - 42, COLORS.gold, 12, 72);
+    }
+  }
+
+  function updateSpawns(dt) {
+    game.spawnClock -= dt;
+    if (game.spawnClock <= 0 && game.spawned < CONFIG.maxAllies) {
+      game.spawnClock += CONFIG.spawnEvery;
+      spawnAlly(false);
+    }
+  }
+
+  function spawnAlly(preview) {
+    const typeIndex = game.spawned % allyTypes.length;
+    const type = allyTypes[typeIndex];
+    const lane = (game.spawned % 6) - 2.5;
+    const x = preview ? W / 2 + lane * 17 : random(44, W - 44);
+    const ally = {
+      id: game.spawned,
+      type,
+      typeIndex,
+      x,
+      y: H + random(8, 42),
+      tx: x,
+      ty: CONFIG.allyBaseY,
+      wobble: random(0, Math.PI * 2),
+      speed: random(2.0, 3.1),
+      offset: lane * 18 + random(-5, 5),
+      row: Math.floor((game.spawned % 12) / 4),
+      attackClock: random(0.1, 0.5),
+      blink: random(0, 1),
+      fear: 0,
+      scatterX: x,
+      scatterY: CONFIG.allyBaseY,
+      reviveReady: typeIndex === 2,
+      invuln: 0,
+      wasSaved: false,
+      dead: false
+    };
+    game.allies.push(ally);
+    if (!preview) {
+      game.spawned += 1;
+      addFloating(`+ ${type.role}`, ally.x, H - 32, type.accent);
+    } else {
+      game.spawned += 1;
+    }
+  }
+
+  function updateAllies(dt) {
+    const living = livingAllies();
+    living.forEach((ally, index) => {
+      ally.fear = Math.max(0, ally.fear - dt);
+      ally.invuln = Math.max(0, ally.invuln - dt);
+      const tailing = !game.player.shield && game.player.shieldRelease < 0.72;
+      const scattering = !game.player.shield && !tailing && ally.fear > 0;
+      const trustRatio = game.trust / 100;
+      const tight = (game.player.shield || tailing)
+        ? lerp(1.42, 0.76, trustRatio)
+        : lerp(3.0, 2.1, trustRatio);
+      const wave = Math.sin(game.time * ally.speed + ally.wobble);
+      const col = (index % 5) - 2;
+      const row = Math.floor(index / 5);
+      const formationX = game.player.x + col * 17 * tight + wave * ((game.player.shield || tailing) ? 5 : 28);
+      const formationY = CONFIG.allyBaseY + row * 22 + Math.cos(game.time * 1.7 + ally.wobble) * ((game.player.shield || tailing) ? 4 : 18);
+      ally.tx = scattering
+        ? ally.scatterX + wave * 6
+        : clamp(formationX + ally.offset * ((game.player.shield || tailing) ? 0.18 : 1.05), 30, W - 30);
+      ally.ty = scattering
+        ? ally.scatterY + Math.cos(game.time * 2.1 + ally.wobble) * 5
+        : clamp(formationY, 486, H - 34);
+      let ease = game.player.shield
+        ? lerp(3.6, 6.2, trustRatio)
+        : tailing
+          ? lerp(2.9, 4.4, trustRatio)
+          : scattering ? 2.35 : 2.2;
+      if (!game.player.shield && ally.typeIndex === 1) ease += 0.65;
+      ally.x += (ally.tx - ally.x) * Math.min(1, dt * ease);
+      ally.y += (ally.ty - ally.y) * Math.min(1, dt * ease);
+      ally.attackClock -= dt;
+      ally.blink += dt;
+      if (ally.attackClock <= 0 && game.mode === "play") {
+        ally.attackClock += random(0.36, 0.64);
+        game.damageTicks.push({
+          x1: ally.x,
+          y1: ally.y - 12,
+          x2: game.boss.x + random(-28, 28),
+          y2: game.boss.y + random(-18, 18),
+          life: 0.16,
+          color: ally.type.accent
+        });
+      }
+    });
+
+    game.corpses.forEach((corpse) => {
+      corpse.life -= dt;
+      corpse.y += dt * 4;
+    });
+    game.corpses = game.corpses.filter((corpse) => corpse.life > 0);
+  }
+
+  function updateBossPressure(dt) {
+    const living = livingAllies();
+    let damage = 0;
+    const trustDamageBonus = 0.82 + (game.trust / 100) * 0.45;
+    living.forEach((ally) => {
+      damage += ally.type.dps * trustDamageBonus * dt;
+    });
+    if (damage > 0) {
+      game.boss.hp -= damage;
+      game.boss.hurt = Math.min(0.2, game.boss.hurt + damage * 0.003);
+    }
+    game.boss.hurt = Math.max(0, game.boss.hurt - dt);
+  }
+
+  function updateAttacks(dt) {
+    game.attackClock -= dt;
+    const phase = bossPhase();
+    if (game.attackClock <= 0) {
+      launchAttack();
+      if (phase >= 4 && Math.random() < 0.58) {
+        launchAttack(random(-76, 76));
+        addFloating("연속 2타", game.boss.x, game.boss.y + 64, COLORS.red);
+      }
+      if (phase >= 4) game.attackClock = random(0.9, 1.45);
+      else if (phase >= 3) game.attackClock = random(1.05, 1.75);
+      else if (phase >= 2) game.attackClock = random(1.2, 2.05);
+      else game.attackClock = random(1.45, 2.35);
+    }
+
+    game.projectiles.forEach((projectile) => {
+      projectile.prevY = projectile.y;
+      projectile.life += dt;
+      if (projectile.type === "orb") {
+        projectile.x += (getClusterX() - projectile.x) * dt * 0.55;
+      }
+      projectile.y += projectile.vy * dt;
+      projectile.spin += dt * 8;
+      projectile.warn -= dt;
+    });
+
+    for (const projectile of game.projectiles) {
+      if (projectile.dead) continue;
+      if (tryShieldBlock(projectile)) {
+        projectile.dead = true;
+        continue;
+      }
+      if (hitTank(projectile)) {
+        projectile.dead = true;
+        continue;
+      }
+      hitAllies(projectile);
+      if (projectile.y > H + 60) projectile.dead = true;
+    }
+
+    game.projectiles = game.projectiles.filter((projectile) => !projectile.dead);
+    game.damageTicks.forEach((tick) => {
+      tick.life -= dt;
+    });
+    game.damageTicks = game.damageTicks.filter((tick) => tick.life > 0);
+
+    if (game.comboWindow > 0) {
+      game.comboWindow -= dt;
+      if (game.comboWindow <= 0 && game.comboKills >= 2) {
+        game.maxCombo = Math.max(game.maxCombo, game.comboKills);
+        addFloating(`${game.comboKills}명 정치질 콤보`, W / 2, 266, COLORS.gold);
+        addChat("탱 차이 도배됨");
+      }
+      if (game.comboWindow <= 0) game.comboKills = 0;
+    }
+  }
+
+  function updateChat(dt) {
+    game.nextChat -= dt;
+    if (game.nextChat <= 0) {
+      game.nextChat = random(1.8, 3.2);
+      const hpRatio = game.boss.hp / game.boss.maxHp;
+      const allyLine = randomAllyChat();
+      if (hpRatio < 0.35 && livingAllies().length > 0 && Math.random() < 0.34) addChat("보스 피 얼마 안 남음");
+      else if (allyLine && Math.random() < 0.78) addChat(allyLine);
+      else if (game.player.shield) addChat(randomPick(chatIdle));
+    }
+  }
+
+  function randomAllyChat() {
+    const living = livingAllies();
+    if (living.length === 0) return null;
+    const ally = randomPick(living);
+    const lines = roleChats[ally.typeIndex] || chatIdle;
+    return randomPick(lines);
+  }
+
+  function bossPhase() {
+    const hpRatio = game.boss.hp / game.boss.maxHp;
+    if (hpRatio <= 0.2) return 4;
+    if (hpRatio <= 0.4) return 3;
+    if (hpRatio <= 0.7) return 2;
+    return 1;
+  }
+
+  function bossPhaseLabel() {
+    const phase = bossPhase();
+    if (phase >= 4) return "분노 3";
+    if (phase >= 3) return "분노 2";
+    if (phase >= 2) return "분노 1";
+    return "평온";
+  }
+
+  function launchAttack(offset = 0) {
+    const target = clamp(getClusterX() + random(-24, 24) + offset, 44, W - 44);
+    const phase = bossPhase();
+    const roll = Math.random();
+    let projectile;
+    const boltCut = phase >= 3 ? 0.26 : phase >= 2 ? 0.34 : 0.42;
+    const waveCut = phase >= 3 ? 0.8 : phase >= 2 ? 0.78 : 0.76;
+    if (roll < boltCut) {
+      projectile = {
+        type: "bolt",
+        name: "검은 바늘",
+        x: target,
+        y: 148,
+        prevY: 148,
+        vy: phase >= 3 ? 308 : 272,
+        width: 14,
+        height: 30,
+        killRadius: 21,
+        warn: 0.46,
+        life: 0,
+        spin: 0,
+        dead: false
+      };
+      addFloating("작은 스킬", target, 164, COLORS.blue);
+    } else if (roll < waveCut) {
+      projectile = {
+        type: "wave",
+        name: "화염 파동",
+        x: target,
+        y: 150,
+        prevY: 150,
+        vy: phase >= 3 ? 198 : 172,
+        width: random(phase >= 3 ? 112 : 92, phase >= 3 ? 146 : 124),
+        height: 26,
+        killRadius: 0,
+        warn: 0.55,
+        life: 0,
+        spin: 0,
+        dead: false
+      };
+      addFloating("큰 스킬", target, 164, COLORS.red);
+    } else {
+      projectile = {
+        type: "orb",
+        name: "죽음의 구체",
+        x: target,
+        y: 148,
+        prevY: 148,
+        vy: phase >= 3 ? 154 : 134,
+        width: 52,
+        height: 52,
+        killRadius: 49,
+        warn: 0.75,
+        life: 0,
+        spin: 0,
+        dead: false
+      };
+      addFloating("위험", target, 164, COLORS.purple);
+    }
+    game.projectiles.push(projectile);
+    bossMuzzle(projectile.x);
+  }
+
+  function tryShieldBlock(projectile) {
+    if (!game.player.shield) return false;
+    const shieldY = game.player.y - 32;
+    const shieldW = 116;
+    const reach = projectile.type === "wave" ? projectile.height : projectile.height * 0.45;
+    const horizontal = projectile.type === "wave"
+      ? Math.abs(projectile.x - game.player.x) < shieldW / 2 + projectile.width / 2
+      : Math.abs(projectile.x - game.player.x) < shieldW / 2 + projectile.width / 2;
+    const crosses = projectile.prevY + reach < shieldY && projectile.y + reach >= shieldY;
+    if (horizontal && crosses) {
+      burst(projectile.x, shieldY, COLORS.blue, 22, 160);
+      addFloating("막힘", projectile.x, shieldY - 10, COLORS.blue);
+      game.shieldBlocks += 1;
+      game.blockWindow = 2;
+      reduceSuspicion(16);
+      addFloating("알리바이", game.player.x, game.player.y - 72, COLORS.blue);
+      addChat("이번엔 막았네");
+      return true;
+    }
+    return false;
+  }
+
+  function hitTank(projectile) {
+    if (game.player.shield || game.mode !== "play") return false;
+
+    const tankX = game.player.x;
+    const tankY = game.player.y - 6;
+    const tankHalfW = 10;
+    const tankHalfH = 22;
+    let hit = false;
+
+    if (projectile.type === "wave") {
+      hit = Math.abs(projectile.x - tankX) < projectile.width / 2 + tankHalfW
+        && Math.abs(projectile.y - tankY) < projectile.height / 2 + tankHalfH;
+    } else if (projectile.type === "orb") {
+      hit = dist(projectile.x, projectile.y, tankX, tankY) < projectile.killRadius + 6;
+    } else {
+      const top = tankY - tankHalfH;
+      const bottom = tankY + tankHalfH;
+      const horizontal = Math.abs(projectile.x - tankX) < projectile.width / 2 + tankHalfW;
+      const vertical = projectile.y + projectile.height / 2 >= top
+        && projectile.prevY - projectile.height / 2 <= bottom;
+      hit = horizontal && vertical;
+    }
+
+    if (!hit) return false;
+
+    burst(tankX, tankY, COLORS.red, 32, 142);
+    burst(tankX, tankY - 8, COLORS.ink, 12, 80);
+    game.tankHits += 1;
+    addFloating("탱커 피격", tankX, tankY - 34, COLORS.red);
+    addChat("탱커도 맞음?");
+    endGame(false, "tank");
+    return true;
+  }
+
+  function hitAllies(projectile) {
+    const victims = [];
+    for (const ally of game.allies) {
+      if (ally.dead) continue;
+      if (ally.invuln > 0) continue;
+      let hit = false;
+      if (projectile.type === "wave") {
+        hit = Math.abs(ally.x - projectile.x) < projectile.width / 2 && Math.abs(ally.y - projectile.y) < 24;
+      } else if (projectile.type === "orb") {
+        hit = dist(ally.x, ally.y, projectile.x, projectile.y) < projectile.killRadius;
+      } else {
+        hit = dist(ally.x, ally.y, projectile.x, projectile.y) < projectile.killRadius;
+      }
+      if (hit) victims.push(ally);
+    }
+
+    if (victims.length === 0) return;
+    const killedNow = victims.reduce((count, ally) => count + (killAlly(ally, projectile) ? 1 : 0), 0);
+    if (projectile.type === "orb") {
+      burst(projectile.x, projectile.y, COLORS.purple, 14, 80);
+    }
+    if (killedNow >= 2) {
+      game.comboWindow = 0.22;
+      game.comboKills += killedNow;
+    }
+    if (killedNow >= 3) {
+      completeMission("combo3");
+    }
+  }
+
+  function killAlly(ally, projectile) {
+    if (ally.dead) return;
+    if (tryHealerSave(ally)) return false;
+
+    const quality = betrayalQuality();
+    if (quality === "clean") {
+      game.betrayals += 1;
+      game.trust = clamp(game.trust - 2, 0, 100);
+      reduceSuspicion(4);
+      addFloating("배신 성공", ally.x, ally.y - 38, COLORS.gold);
+      if (game.blockWindow > 0) completeMission("blockBetray");
+    } else if (quality === "early") {
+      game.earlyBetrayals += 1;
+      game.trust = clamp(game.trust - 8, 0, 100);
+      addSuspicion(24, ally.x, ally.y - 38, "너무 빠름");
+      addChat("방패 너무 빨리 내림");
+    } else {
+      game.lateBetrayals += 1;
+      game.trust = clamp(game.trust - 6, 0, 100);
+      addSuspicion(18, ally.x, ally.y - 38, "수상함");
+      addChat("왜 계속 열려 있음?");
+    }
+
+    ally.dead = true;
+    game.killed += 1;
+    game.roleScore += ally.type.report;
+    if (ally.typeIndex === 2) completeMission("killHealer");
+    if (ally.wasSaved) {
+      game.revivedKills += 1;
+      ally.wasSaved = false;
+      addFloating("재처리", ally.x, ally.y - 42, COLORS.gold);
+    }
+    game.corpses.push({ x: ally.x, y: ally.y, type: ally.type, life: 1.2 });
+    burst(ally.x, ally.y, ally.type.color, 18, 88);
+    burst(ally.x, ally.y - 4, COLORS.ink, 8, 48);
+    addFloating("탈락", ally.x, ally.y - 24, COLORS.red);
+    addChat(randomPick(chatKill));
+    return true;
+  }
+
+  function tryHealerSave(ally) {
+    if (ally.typeIndex === 2 && ally.reviveReady) {
+      ally.reviveReady = false;
+      ally.invuln = 0.85;
+      ally.fear = Math.max(ally.fear, 0.5);
+      ally.wasSaved = true;
+      game.revivals += 1;
+      addSuspicion(10, ally.x, ally.y - 38, "힐러 생존");
+      addFloating("자가 회복", ally.x, ally.y - 26, COLORS.green);
+      burst(ally.x, ally.y, COLORS.green, 18, 76);
+      addChat("힐러가 버팀");
+      return true;
+    }
+
+    const healer = game.allies.find((candidate) =>
+      !candidate.dead
+      && candidate.typeIndex === 2
+      && candidate.reviveReady
+      && candidate.id !== ally.id
+      && dist(candidate.x, candidate.y, ally.x, ally.y) < 118
+    );
+
+    if (!healer) return false;
+    healer.reviveReady = false;
+    healer.invuln = 0.55;
+    ally.invuln = 0.65;
+    ally.wasSaved = true;
+    game.revivals += 1;
+    addSuspicion(12, healer.x, healer.y - 38, "힐러 세이브");
+    addFloating("부활", ally.x, ally.y - 26, COLORS.green);
+    burst(ally.x, ally.y, COLORS.green, 22, 82);
+    burst(healer.x, healer.y - 8, COLORS.green, 12, 48);
+      addChat("힐로 살림");
+    return true;
+  }
+
+  function updateParticles(dt) {
+    game.particles.forEach((p) => {
+      p.life -= dt;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vy += 80 * dt;
+    });
+    game.particles = game.particles.filter((p) => p.life > 0);
+  }
+
+  function updateFloating(dt) {
+    game.floating.forEach((f) => {
+      f.life -= dt;
+      f.y -= dt * 28;
+    });
+    game.floating = game.floating.filter((f) => f.life > 0);
+  }
+
+  function addChat(text) {
+    game.chat.push({ text, age: 0 });
+    if (game.chat.length > 8) game.chat.shift();
+  }
+
+  function chatColor(text) {
+    if (/시스템|플레이 경험|POTG|힐|부활|자가 회복|알리바이|막았|게임 시작|레이드 시작|배신 성공|최고의 플레이/.test(text)) {
+      return COLORS.gold;
+    }
+    if (/리폿|신고|탱 차이|실화|던짐|무서움|열어|고의|간첩|증거|설명|잠수|나만 맞아|방패 버튼|압수/.test(text)) {
+      return COLORS.red;
+    }
+    return COLORS.ink;
+  }
+
+  function addFloating(text, x, y, color) {
+    game.floating.push({ text, x, y, color, life: 0.9 });
+  }
+
+  function burst(x, y, color, count, power) {
+    for (let i = 0; i < count; i += 1) {
+      const angle = random(0, Math.PI * 2);
+      const speed = random(power * 0.35, power);
+      game.particles.push({
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - random(6, 32),
+        size: random(2, 5),
+        color,
+        life: random(0.25, 0.68)
+      });
+    }
+  }
+
+  function bossMuzzle(x) {
+    burst(x, game.boss.y + 42, COLORS.deepRed, 8, 50);
+  }
+
+  function livingAllies() {
+    return game.allies.filter((ally) => !ally.dead);
+  }
+
+  function getClusterX() {
+    const living = livingAllies();
+    if (living.length === 0) return game.player.x;
+    return living.reduce((sum, ally) => sum + ally.x, 0) / living.length;
+  }
+
+  function draw() {
+    ctx.imageSmoothingEnabled = false;
+    drawArena();
+    drawBoss();
+    drawDamageTicks();
+    drawProjectiles();
+    drawCorpses();
+    drawAllies();
+    drawTank();
+    drawParticles();
+    drawFloating();
+    drawHud();
+    drawChat();
+  }
+
+  function drawArena() {
+    ctx.fillStyle = COLORS.floor;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = "#121722";
+    ctx.fillRect(0, 0, W, 154);
+
+    ctx.fillStyle = COLORS.floor2;
+    for (let y = 154; y < H; y += 32) {
+      for (let x = -24; x < W; x += 48) {
+        const offset = ((y / 32) % 2) * 24;
+        ctx.fillRect(x + offset, y, 44, 2);
+      }
+    }
+
+    ctx.strokeStyle = COLORS.line;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 6]);
+    ctx.beginPath();
+    ctx.moveTo(24, CONFIG.playerY - 38);
+    ctx.lineTo(W - 24, CONFIG.playerY - 38);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = "rgba(101, 183, 255, 0.05)";
+    ctx.fillRect(0, CONFIG.playerY - 42, W, 4);
+
+    drawPixelBanner();
+  }
+
+  function drawPixelBanner() {
+    ctx.fillStyle = "#252a37";
+    ctx.fillRect(32, 126, W - 64, 12);
+    ctx.fillStyle = "#3a4254";
+    for (let x = 40; x < W - 40; x += 16) ctx.fillRect(x, 130, 8, 4);
+  }
+
+  function drawHud() {
+    const hpRatio = clamp(game.boss.hp / game.boss.maxHp, 0, 1);
+    ctx.fillStyle = "rgba(10, 12, 18, 0.72)";
+    ctx.fillRect(12, 12, W - 24, 118);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+    ctx.strokeRect(12.5, 12.5, W - 25, 117);
+
+    drawText("보스 HP", 24, 32, 12, COLORS.muted, "left");
+    ctx.fillStyle = "#381920";
+    ctx.fillRect(76, 22, 196, 14);
+    ctx.fillStyle = hpRatio < 0.3 ? COLORS.red : COLORS.green;
+    ctx.fillRect(76, 22, Math.max(0, 196 * hpRatio), 14);
+    ctx.strokeStyle = "#f3efe6";
+    ctx.strokeRect(76.5, 22.5, 195, 13);
+
+    const alive = livingAllies().length;
+    drawText(`아군 ${alive}/${CONFIG.maxAllies}`, 24, 60, 12, COLORS.ink, "left");
+    drawText(`처리 ${game.killed}`, 142, 60, 12, COLORS.gold, "left");
+    drawText(`신고 ${calculateReports(false, "preview", alive)}`, 252, 60, 12, COLORS.red, "left");
+
+    const suspicionRatio = clamp(game.suspicion / CONFIG.suspicionMax, 0, 1);
+    drawText("의심", 24, 84, 10, COLORS.muted, "left");
+    ctx.fillStyle = "#2a1820";
+    ctx.fillRect(76, 78, 196, 9);
+    ctx.fillStyle = suspicionRatio > 0.75 ? COLORS.red : suspicionRatio > 0.45 ? COLORS.gold : COLORS.blue;
+    ctx.fillRect(76, 78, Math.max(0, 196 * suspicionRatio), 9);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.32)";
+    ctx.strokeRect(76.5, 78.5, 195, 8);
+
+    const trustRatio = clamp(game.trust / 100, 0, 1);
+    drawText("신뢰", 24, 98, 10, COLORS.muted, "left");
+    ctx.fillStyle = "#162431";
+    ctx.fillRect(76, 92, 196, 9);
+    ctx.fillStyle = trustRatio > 0.7 ? COLORS.green : trustRatio > 0.35 ? COLORS.blue : COLORS.gray;
+    ctx.fillRect(76, 92, Math.max(0, 196 * trustRatio), 9);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.32)";
+    ctx.strokeRect(76.5, 92.5, 195, 8);
+
+    const missionText = game.mission ? game.mission.text.replace("미션: ", "") : "미션 대기";
+    drawText(`${bossPhaseLabel()} · ${missionText}`, 24, 115, 9, game.mission ? COLORS.gold : COLORS.muted, "left");
+
+    if (game.mode === "play") {
+      const attackSoon = game.attackClock < 0.8;
+      const release = game.player.shieldRelease;
+      const cue = game.player.shield
+        ? (attackSoon ? "위험" : "대기")
+        : release < CONFIG.betrayalEarly
+          ? "너무 빠름"
+          : release <= CONFIG.betrayalLate
+            ? "배신각"
+            : "의심";
+      drawText(cue, W - 26, 32, 12, game.player.shield ? (attackSoon ? COLORS.red : COLORS.muted) : cue === "배신각" ? COLORS.gold : COLORS.red, "right");
+    }
+  }
+
+  function drawBoss() {
+    const x = game.boss.x;
+    const y = game.boss.y;
+    const hurtOffset = game.boss.hurt > 0 ? Math.sin(game.time * 55) * 2 : 0;
+    const px = Math.round(x + hurtOffset);
+    const py = Math.round(y);
+    const phase = bossPhase();
+
+    rect(px - 42, py + 34, 84, 12, "rgba(0, 0, 0, 0.34)");
+    if (phase >= 2) {
+      ctx.globalAlpha = 0.1 + phase * 0.04 + Math.sin(game.time * 10) * 0.03;
+      rect(px - 58, py - 46, 116, 104, phase >= 4 ? COLORS.red : COLORS.purple);
+      ctx.globalAlpha = 1;
+    }
+    rect(px - 34, py - 28, 68, 52, "#68334a");
+    rect(px - 42, py - 8, 84, 38, "#842f3f");
+    rect(px - 28, py + 26, 56, 16, "#4b2737");
+    rect(px - 50, py - 24, 18, 18, COLORS.gold);
+    rect(px + 32, py - 24, 18, 18, COLORS.gold);
+    rect(px - 50, py - 34, 10, 10, "#fff0a8");
+    rect(px + 40, py - 34, 10, 10, "#fff0a8");
+    rect(px - 20, py - 6, 12, 8, COLORS.gold);
+    rect(px + 8, py - 6, 12, 8, COLORS.gold);
+    rect(px - 16, py + 12, 32, 5, "#21131d");
+    rect(px - 24, py + 30, 10, 14, "#3d2230");
+    rect(px + 14, py + 30, 10, 14, "#3d2230");
+
+    if (game.attackClock < 0.85 && game.mode === "play") {
+      ctx.globalAlpha = 0.35 + Math.sin(game.time * 18) * 0.18;
+      rect(px - 56, py - 42, 112, 96, COLORS.red);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function drawDamageTicks() {
+    game.damageTicks.forEach((tick) => {
+      ctx.globalAlpha = clamp(tick.life / 0.16, 0, 1);
+      ctx.strokeStyle = tick.color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(Math.round(tick.x1), Math.round(tick.y1));
+      ctx.lineTo(Math.round(tick.x2), Math.round(tick.y2));
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    });
+  }
+
+  function drawProjectiles() {
+    game.projectiles.forEach((p) => {
+      const warnAlpha = clamp(p.warn / 0.75, 0, 1);
+      if (p.warn > 0) {
+        ctx.globalAlpha = 0.22 + warnAlpha * 0.18;
+        ctx.fillStyle = p.type === "wave" ? COLORS.red : p.type === "orb" ? COLORS.purple : COLORS.blue;
+        ctx.fillRect(Math.round(p.x - p.width / 2), 150, Math.round(p.width), H - 178);
+        ctx.globalAlpha = 1;
+      }
+
+      if (p.type === "wave") {
+        for (let i = 0; i < 8; i += 1) {
+          const bx = p.x - p.width / 2 + i * (p.width / 8);
+          const by = p.y + Math.sin(game.time * 9 + i) * 5;
+          rect(bx, by - 11, p.width / 9, 22, i % 2 ? COLORS.red : "#ff9a4e");
+        }
+        rect(p.x - p.width / 2, p.y + 12, p.width, 6, COLORS.deepRed);
+      } else if (p.type === "orb") {
+        rect(p.x - 18, p.y - 18, 36, 36, COLORS.purple);
+        rect(p.x - 25, p.y - 8, 50, 16, "#7f45d6");
+        rect(p.x - 8, p.y - 25, 16, 50, "#7f45d6");
+        rect(p.x - 8, p.y - 8, 16, 16, "#f0d3ff");
+      } else {
+        rect(p.x - 5, p.y - 18, 10, 36, "#d5f4ff");
+        rect(p.x - 9, p.y - 8, 18, 14, COLORS.blue2);
+        rect(p.x - 3, p.y + 17, 6, 12, COLORS.blue);
+      }
+    });
+  }
+
+  function drawCorpses() {
+    game.corpses.forEach((corpse) => {
+      ctx.globalAlpha = clamp(corpse.life, 0, 1);
+      rect(corpse.x - 7, corpse.y - 8, 14, 12, "#e8e0cf");
+      rect(corpse.x - 4, corpse.y - 3, 3, 3, COLORS.black);
+      rect(corpse.x + 2, corpse.y - 3, 3, 3, COLORS.black);
+      rect(corpse.x - 3, corpse.y + 4, 6, 2, COLORS.black);
+      ctx.globalAlpha = 1;
+    });
+  }
+
+  function drawAllies() {
+    const living = livingAllies().sort((a, b) => a.y - b.y);
+    living.forEach(drawAlly);
+  }
+
+  function drawAlly(ally) {
+    const x = Math.round(ally.x);
+    const y = Math.round(ally.y);
+    rect(x - 10, y + 10, 20, 5, "rgba(0, 0, 0, 0.28)");
+    rect(x - 7, y - 12, 14, 18, ally.type.color);
+    rect(x - 6, y - 20, 12, 10, "#f0c6a0");
+    rect(x - 8, y - 22, 16, 6, ally.type.accent);
+    rect(x - 11, y - 8, 4, 12, ally.type.accent);
+    rect(x + 7, y - 8, 4, 12, ally.type.accent);
+    rect(x - 5, y + 6, 4, 8, "#2b2f3a");
+    rect(x + 1, y + 6, 4, 8, "#2b2f3a");
+
+    if (ally.invuln > 0) {
+      ctx.globalAlpha = 0.45 + Math.sin(game.time * 18) * 0.16;
+      rect(x - 13, y - 27, 26, 4, COLORS.green);
+      rect(x - 13, y + 14, 26, 4, COLORS.green);
+      ctx.globalAlpha = 1;
+    }
+
+    if (ally.typeIndex === 2) {
+      rect(x - 2, y - 8, 4, 10, COLORS.green);
+      rect(x - 5, y - 5, 10, 4, COLORS.green);
+      if (ally.reviveReady) {
+        rect(x - 4, y - 30, 8, 5, COLORS.green);
+      }
+    } else if (ally.typeIndex === 3) {
+      rect(x + 12, y - 20, 3, 24, COLORS.gold);
+      rect(x + 10, y - 23, 7, 7, COLORS.purple);
+    } else if (ally.typeIndex === 1) {
+      rect(x - 4, y - 18, 8, 5, COLORS.black);
+      rect(x + 9, y - 6, 9, 3, "#dce6ef");
+    } else {
+      rect(x + 9, y - 9, 11, 5, COLORS.gold);
+    }
+
+    if (game.player.shield) {
+      ctx.globalAlpha = 0.55 + Math.sin(game.time * 8 + ally.id) * 0.16;
+      rect(x - 11, y - 26, 22, 3, COLORS.blue);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function drawTank() {
+    const x = Math.round(game.player.x);
+    const y = Math.round(game.player.y);
+    rect(x - 14, y + 15, 28, 6, "rgba(0, 0, 0, 0.35)");
+
+    if (game.player.shield) {
+      drawShield(x, y);
+    }
+
+    rect(x - 12, y - 19, 24, 28, "#66717f");
+    rect(x - 17, y - 10, 9, 18, "#4f5968");
+    rect(x + 8, y - 10, 9, 18, "#4f5968");
+    rect(x - 9, y - 30, 18, 13, "#7c8795");
+    rect(x - 6, y - 25, 12, 4, COLORS.blue);
+    rect(x - 13, y + 8, 8, 12, "#3f4653");
+    rect(x + 5, y + 8, 8, 12, "#3f4653");
+    rect(x - 19, y - 3, 6, 15, "#2f3642");
+    rect(x + 13, y - 3, 6, 15, "#2f3642");
+
+    if (!game.player.shield && game.player.shieldRelease < 0.18) {
+      ctx.globalAlpha = 1 - game.player.shieldRelease / 0.18;
+      rect(x - 56, y - 48, 112, 6, COLORS.gold);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function drawShield(x, y) {
+    const top = y - 38;
+    const left = x - 58;
+    ctx.globalAlpha = 0.28 + Math.sin(game.time * 12) * 0.07;
+    rect(left, top, 116, 8, COLORS.blue);
+    ctx.globalAlpha = 0.85;
+    for (let i = 0; i < 10; i += 1) {
+      const bx = left + i * 12;
+      rect(bx, top + (i % 2), 8, 6, i % 2 ? "#d5f4ff" : COLORS.blue);
+    }
+    ctx.globalAlpha = 1;
+    rect(left, top - 2, 116, 2, "#d5f4ff");
+    rect(left, top + 8, 116, 2, COLORS.blue2);
+  }
+
+  function drawParticles() {
+    game.particles.forEach((p) => {
+      ctx.globalAlpha = clamp(p.life / 0.68, 0, 1);
+      rect(p.x, p.y, p.size, p.size, p.color);
+      ctx.globalAlpha = 1;
+    });
+  }
+
+  function drawFloating() {
+    game.floating.forEach((f) => {
+      ctx.globalAlpha = clamp(f.life / 0.9, 0, 1);
+      drawText(f.text, f.x, f.y, 12, f.color, "center");
+      ctx.globalAlpha = 1;
+    });
+  }
+
+  function drawChat() {
+    const x = 10;
+    const y = 510;
+    const w = 162;
+    const h = 116;
+    ctx.fillStyle = "rgba(8, 10, 16, 0.68)";
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+    ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+    drawText("팀 채팅", x + 8, y + 15, 10, COLORS.muted, "left");
+
+    const lines = game.chat.slice(-6);
+    lines.forEach((line, index) => {
+      const yy = y + 33 + index * 14;
+      const color = chatColor(line.text);
+      drawText(line.text, x + 8, yy, 10, color, "left");
+    });
+  }
+
+  function rect(x, y, w, h, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+  }
+
+  function drawText(text, x, y, size, color, align) {
+    ctx.font = `700 ${size}px "Malgun Gothic", "Apple SD Gothic Neo", monospace`;
+    ctx.textAlign = align;
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = color;
+    String(text).split("\n").forEach((line, index, lines) => {
+      const offset = (index - (lines.length - 1) / 2) * size * 1.25;
+      ctx.fillText(line, Math.round(x), Math.round(y + offset));
+    });
+  }
+
+  function random(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  function randomPick(list) {
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function lerp(a, b, t) {
+    return a + (b - a) * clamp(t, 0, 1);
+  }
+
+  function dist(x1, y1, x2, y2) {
+    return Math.hypot(x1 - x2, y1 - y2);
+  }
+})();
+</script>
+</body>
+</html>
