@@ -342,7 +342,15 @@ h2 {
 }
 
 .ranking-submit {
-  margin: 12px 0 0;
+  margin: 8px 0 0;
+}
+
+.rank-summary {
+  margin: 6px 0 8px;
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.35;
 }
 
 .nickname-row {
@@ -409,19 +417,19 @@ h2 {
 .result-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-  margin: 16px 0 20px;
+  gap: 6px;
+  margin: 8px 0 10px;
 }
 
 .system-notice {
-  margin: 10px 0 12px;
-  padding: 9px 10px;
+  margin: 7px 0 8px;
+  padding: 7px 9px;
   border: 1px solid rgba(246, 200, 95, 0.34);
   border-radius: 8px;
   background: rgba(246, 200, 95, 0.08);
   color: var(--gold);
-  font-size: 12px;
-  line-height: 1.45;
+  font-size: 11px;
+  line-height: 1.35;
   white-space: pre-line;
 }
 
@@ -479,8 +487,8 @@ h2 {
 
 .result-scene {
   position: relative;
-  height: 132px;
-  margin: 14px 0 12px;
+  height: 116px;
+  margin: 8px 0;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
@@ -1152,26 +1160,70 @@ h2 {
 }
 
 .result-cell {
-  min-height: 58px;
+  min-height: 44px;
   display: grid;
   place-items: center;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.04);
-  font-size: 12px;
+  font-size: 11px;
   color: var(--muted);
 }
 
 .result-cell b {
   display: block;
-  margin-top: 4px;
+  margin-top: 2px;
   color: var(--ink);
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .result-panel {
+  padding: 16px;
   max-height: calc(100dvh - 42px);
   overflow-y: auto;
+}
+
+.result-panel .kicker {
+  margin-bottom: 5px;
+  font-size: 11px;
+}
+
+.result-panel h2 {
+  font-size: clamp(24px, 6vw, 34px);
+}
+
+.result-panel .copy {
+  margin: 7px 0 8px;
+  font-size: 12px;
+  line-height: 1.42;
+}
+
+.result-panel .ranking-box {
+  padding: 9px;
+}
+
+.result-panel .ranking-title {
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+
+.result-panel .nickname-row {
+  margin-bottom: 6px;
+}
+
+.result-panel .nickname-input,
+.result-panel .compact-btn {
+  height: 36px;
+  min-height: 36px;
+}
+
+.result-panel .primary,
+.result-panel .secondary {
+  min-height: 38px;
+}
+
+.result-panel .rank-status {
+  margin-top: 6px;
 }
 
 html.has-mobile-controls .mobile-controls {
@@ -1393,8 +1445,8 @@ html.has-mobile-controls .mobile-controls {
           <button class="secondary compact-btn" id="randomNameBtn" type="button">랜덤</button>
         </div>
         <button class="primary" id="submitScoreBtn" type="button">랭킹 등록</button>
+        <p class="rank-summary" id="endRankSummary">현재 점수 순위 계산 중...</p>
         <p class="rank-status" id="rankingStatus"></p>
-        <div class="ranking-list" id="endRankingList"></div>
       </div>
       <button class="primary" id="againBtn">다시 파업</button>
       <button class="secondary" id="menuBtn">로비로 나가기</button>
@@ -2030,25 +2082,38 @@ html.has-mobile-controls .mobile-controls {
 
   function prepareRankingSubmit() {
     const date = todayKst();
+    const isWin = game.endReason === "party";
     document.getElementById("rankingDate").textContent = date;
     document.getElementById("endRankingDate").textContent = date;
     const input = document.getElementById("nicknameInput");
+    const randomButton = document.getElementById("randomNameBtn");
+    const submitButton = document.getElementById("submitScoreBtn");
     const nickname = loadNickname() || randomNickname();
     input.value = nickname;
     saveNickname(nickname);
-    setRankingStatus(
-      isRankingConfigured()
-        ? "닉네임을 확인하고 오늘 랭킹에 등록하세요."
-        : "Supabase URL과 anon key를 설정하면 전역 랭킹 등록이 켜집니다."
-    );
-    document.getElementById("submitScoreBtn").disabled = !isRankingConfigured();
-    refreshRankings(document.getElementById("endRankingList"));
+    input.disabled = !isWin || !isRankingConfigured();
+    randomButton.disabled = !isWin || !isRankingConfigured();
+    submitButton.disabled = !isWin || !isRankingConfigured();
+    submitButton.textContent = isWin ? "랭킹 등록" : "게임오버 등록 불가";
+    if (!isWin) {
+      setRankingStatus("게임오버 기록은 랭킹에 등록할 수 없습니다.", "bad");
+    } else {
+      setRankingStatus(
+        isRankingConfigured()
+          ? "닉네임을 확인하고 오늘 랭킹에 등록하세요."
+          : "Supabase URL과 anon key를 설정하면 전역 랭킹 등록이 켜집니다."
+      );
+    }
+    updateEndRankSummary();
   }
 
   async function submitRankingScore() {
-    const status = document.getElementById("rankingStatus");
     if (!isRankingConfigured()) {
       setRankingStatus("Supabase 설정이 아직 비어 있습니다.", "bad");
+      return;
+    }
+    if (game.endReason !== "party") {
+      setRankingStatus("게임오버 기록은 등록할 수 없습니다.", "bad");
       return;
     }
     if (!game.ended || game.rankSubmitted) return;
@@ -2076,10 +2141,30 @@ html.has-mobile-controls .mobile-controls {
       });
       game.rankSubmitted = true;
       setRankingStatus("오늘 랭킹에 등록되었습니다.", "good");
-      await refreshRankings(document.getElementById("endRankingList"));
+      await updateEndRankSummary();
     } catch (error) {
       button.disabled = false;
       setRankingStatus("랭킹 등록 실패. Supabase 설정과 RLS를 확인하세요.", "bad");
+    }
+  }
+
+  async function updateEndRankSummary() {
+    const summary = document.getElementById("endRankSummary");
+    if (!summary) return;
+    if (game.endReason !== "party") {
+      summary.textContent = "게임오버 기록은 오늘의 랭킹에서 제외됩니다.";
+      return;
+    }
+    if (!isRankingConfigured()) {
+      summary.textContent = "랭킹 서버가 연결되면 현재 등수가 표시됩니다.";
+      return;
+    }
+    summary.textContent = "현재 점수 순위 계산 중...";
+    try {
+      const rank = await loadScoreRank(game.reports);
+      summary.textContent = `현재 점수 기준 오늘 ${rank.toLocaleString("ko-KR")}등`;
+    } catch (error) {
+      summary.textContent = "현재 등수를 계산하지 못했습니다.";
     }
   }
 
@@ -2122,7 +2207,20 @@ html.has-mobile-controls .mobile-controls {
     return supabaseRequest(query);
   }
 
-  async function supabaseRequest(path, options = {}) {
+  async function loadScoreRank(score) {
+    const query = `${SUPABASE_CONFIG.table}?select=id&play_date=eq.${todayKst()}&score=gt.${Math.max(0, Math.round(score))}&limit=1`;
+    const response = await supabaseRawRequest(query, {
+      headers: {
+        Prefer: "count=exact"
+      }
+    });
+    const contentRange = response.headers.get("content-range") || "0-0/0";
+    const total = Number(contentRange.split("/")[1] || 0);
+    await response.text();
+    return Number.isFinite(total) ? total + 1 : 1;
+  }
+
+  async function supabaseRawRequest(path, options = {}) {
     const base = SUPABASE_CONFIG.url.replace(/\/$/, "");
     const response = await fetch(`${base}/rest/v1/${path}`, {
       ...options,
@@ -2135,6 +2233,11 @@ html.has-mobile-controls .mobile-controls {
       }
     });
     if (!response.ok) throw new Error(await response.text());
+    return response;
+  }
+
+  async function supabaseRequest(path, options = {}) {
+    const response = await supabaseRawRequest(path, options);
     if (response.status === 204) return null;
     return response.json();
   }
