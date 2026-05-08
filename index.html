@@ -72,8 +72,8 @@ canvas {
   display: none;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 0 20px;
-  pointer-events: none;
+  padding: 22px 20px 0;
+  pointer-events: auto;
   touch-action: none;
 }
 
@@ -1107,6 +1107,7 @@ html.has-mobile-controls .mobile-controls {
     right: document.getElementById("touchRight"),
     shield: document.getElementById("touchShield")
   };
+  const activeTouches = new Map();
   const activePointers = new Map();
 
   const COLORS = {
@@ -1386,15 +1387,17 @@ html.has-mobile-controls .mobile-controls {
   function bindMobileControls() {
     if (!mobileControls) return;
 
-    ["touchstart", "touchmove", "touchend", "touchcancel"].forEach((type) => {
-      mobileControls.addEventListener(type, handleTouchControls, { passive: false });
-    });
-
-    mobileControls.addEventListener("pointerdown", handlePointerStart);
-    mobileControls.addEventListener("pointermove", handlePointerMove);
-    ["pointerup", "pointercancel", "lostpointercapture"].forEach((type) => {
-      mobileControls.addEventListener(type, handlePointerEnd);
-    });
+    if (window.PointerEvent) {
+      mobileControls.addEventListener("pointerdown", handlePointerStart);
+      mobileControls.addEventListener("pointermove", handlePointerMove);
+      ["pointerup", "pointercancel", "lostpointercapture"].forEach((type) => {
+        mobileControls.addEventListener(type, handlePointerEnd);
+      });
+    } else {
+      ["touchstart", "touchmove", "touchend", "touchcancel"].forEach((type) => {
+        mobileControls.addEventListener(type, handleTouchControls, { passive: false });
+      });
+    }
 
     Object.values(mobileButtons).forEach((button) => {
       button?.addEventListener("contextmenu", (event) => event.preventDefault());
@@ -1403,12 +1406,20 @@ html.has-mobile-controls .mobile-controls {
 
   function handleTouchControls(event) {
     event.preventDefault();
-    activePointers.clear();
-    setMobileInput(readTouchInput(event.touches));
+    const ending = event.type === "touchend" || event.type === "touchcancel";
+    Array.from(event.changedTouches).forEach((touch) => {
+      if (ending) {
+        activeTouches.delete(touch.identifier);
+        return;
+      }
+      const key = controlKeyAt(touch.clientX, touch.clientY);
+      if (key) activeTouches.set(touch.identifier, key);
+      else if (activeTouches.get(touch.identifier) !== "shield") activeTouches.delete(touch.identifier);
+    });
+    setMobileInput(readMobileInput());
   }
 
   function handlePointerStart(event) {
-    if (ignoreTouchPointer(event)) return;
     const key = controlKeyAt(event.clientX, event.clientY);
     if (!key) return;
     event.preventDefault();
@@ -1416,41 +1427,30 @@ html.has-mobile-controls .mobile-controls {
     try {
       event.target.setPointerCapture?.(event.pointerId);
     } catch {}
-    setMobileInput(readPointerInput());
+    setMobileInput(readMobileInput());
   }
 
   function handlePointerMove(event) {
-    if (ignoreTouchPointer(event) || !activePointers.has(event.pointerId)) return;
+    if (!activePointers.has(event.pointerId)) return;
     event.preventDefault();
     const key = controlKeyAt(event.clientX, event.clientY);
     if (key) activePointers.set(event.pointerId, key);
-    else activePointers.delete(event.pointerId);
-    setMobileInput(readPointerInput());
+    else if (activePointers.get(event.pointerId) !== "shield") activePointers.delete(event.pointerId);
+    setMobileInput(readMobileInput());
   }
 
   function handlePointerEnd(event) {
-    if (ignoreTouchPointer(event)) return;
     if (!activePointers.has(event.pointerId)) return;
     event.preventDefault();
     activePointers.delete(event.pointerId);
-    setMobileInput(readPointerInput());
+    setMobileInput(readMobileInput());
   }
 
-  function ignoreTouchPointer(event) {
-    return event.pointerType === "touch" && "ontouchstart" in window;
-  }
-
-  function readTouchInput(touches) {
+  function readMobileInput() {
     const next = { left: false, right: false, shield: false };
-    Array.from(touches).forEach((touch) => {
-      const key = controlKeyAt(touch.clientX, touch.clientY);
-      if (key) next[key] = true;
+    activeTouches.forEach((key) => {
+      next[key] = true;
     });
-    return next;
-  }
-
-  function readPointerInput() {
-    const next = { left: false, right: false, shield: false };
     activePointers.forEach((key) => {
       next[key] = true;
     });
@@ -1493,6 +1493,7 @@ html.has-mobile-controls .mobile-controls {
   }
 
   function releaseAllInputs() {
+    activeTouches.clear();
     activePointers.clear();
     setMobileInput({ left: false, right: false, shield: false });
   }
