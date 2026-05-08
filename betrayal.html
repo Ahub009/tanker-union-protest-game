@@ -1505,6 +1505,7 @@ html.has-mobile-controls .mobile-controls {
     spawnEvery: 2,
     maxLivingAllies: 10,
     highScoreKills: 30,
+    bossY: 134,
     playerY: 448,
     allyBaseY: 506,
     suspicionMax: 100,
@@ -1533,6 +1534,15 @@ html.has-mobile-controls .mobile-controls {
     { id: "killHealer", text: "미션: 힐러 먼저 제거", reward: 24 },
     { id: "blockBetray", text: "미션: 방패로 막고 2초 안에 배신", reward: 30 },
     { id: "highSuspicionWin", text: "미션: 의심 70 이상으로 승리", reward: 36 }
+  ];
+
+  const arenaThemes = [
+    { id: "volcano", name: "화산", floor: "#231722", floor2: "#39202a", top: "#1a1218", line: "#612d34", accent: "#ff6a3d", glow: "#f6c85f" },
+    { id: "cave", name: "동굴", floor: "#151720", floor2: "#202534", top: "#0d1018", line: "#31384b", accent: "#65b7ff", glow: "#7f8798" },
+    { id: "sea", name: "바다", floor: "#122434", floor2: "#17334a", top: "#102033", line: "#2d7ccc", accent: "#65d7ff", glow: "#f3efe6" },
+    { id: "grass", name: "초원", floor: "#172a20", floor2: "#203b28", top: "#14231a", line: "#3f6b45", accent: "#62d88f", glow: "#f6c85f" },
+    { id: "shrine", name: "신사", floor: "#231c24", floor2: "#302633", top: "#18151f", line: "#6b3c54", accent: "#ff9fbd", glow: "#f3efe6" },
+    { id: "city", name: "도시", floor: "#171d29", floor2: "#202839", top: "#111720", line: "#3a4254", accent: "#f6c85f", glow: "#65b7ff" }
   ];
 
   const chatKill = [
@@ -1766,11 +1776,12 @@ html.has-mobile-controls .mobile-controls {
       },
       boss: {
         x: W / 2,
-        y: 92,
+        y: CONFIG.bossY,
         hp: CONFIG.bossHp,
         maxHp: CONFIG.bossHp,
         hurt: 0
       },
+      theme: randomPick(arenaThemes),
       allies: [],
       corpses: [],
       projectiles: [],
@@ -2744,9 +2755,13 @@ html.has-mobile-controls .mobile-controls {
 
     game.projectiles.forEach((projectile) => {
       projectile.prevY = projectile.y;
+      projectile.prevX = projectile.x;
       projectile.life += dt;
       if (projectile.type === "orb") {
         projectile.x += (getClusterX() - projectile.x) * dt * 0.55;
+      }
+      if (projectile.vx) {
+        projectile.x += projectile.vx * dt;
       }
       projectile.y += projectile.vy * dt;
       projectile.spin += dt * 8;
@@ -2832,16 +2847,21 @@ html.has-mobile-controls .mobile-controls {
     const phase = bossPhase();
     const roll = Math.random();
     let projectile;
-    const boltCut = phase >= 3 ? 0.26 : phase >= 2 ? 0.34 : 0.42;
-    const waveCut = phase >= 3 ? 0.8 : phase >= 2 ? 0.78 : 0.76;
+    const startY = game.boss.y + 58;
+    const boltCut = phase >= 3 ? 0.2 : phase >= 2 ? 0.28 : 0.36;
+    const waveCut = phase >= 3 ? 0.58 : phase >= 2 ? 0.6 : 0.64;
+    const orbCut = phase >= 3 ? 0.78 : phase >= 2 ? 0.8 : 0.82;
+    const sweepCut = phase >= 3 ? 0.9 : phase >= 2 ? 0.9 : 0.91;
     if (roll < boltCut) {
       projectile = {
         type: "bolt",
         name: "검은 바늘",
         x: target,
-        y: 148,
-        prevY: 148,
+        y: startY,
+        prevX: target,
+        prevY: startY,
         vy: phase >= 3 ? 308 : 272,
+        vx: 0,
         width: 14,
         height: 30,
         killRadius: 21,
@@ -2850,15 +2870,17 @@ html.has-mobile-controls .mobile-controls {
         spin: 0,
         dead: false
       };
-      addFloating("작은 스킬", target, 164, COLORS.blue);
+      addFloating("작은 스킬", target, startY + 16, COLORS.blue);
     } else if (roll < waveCut) {
       projectile = {
         type: "wave",
         name: "화염 파동",
         x: target,
-        y: 150,
-        prevY: 150,
+        y: startY + 2,
+        prevX: target,
+        prevY: startY + 2,
         vy: phase >= 3 ? 198 : 172,
+        vx: 0,
         width: random(phase >= 3 ? 112 : 92, phase >= 3 ? 146 : 124),
         height: 26,
         killRadius: 0,
@@ -2867,15 +2889,17 @@ html.has-mobile-controls .mobile-controls {
         spin: 0,
         dead: false
       };
-      addFloating("큰 스킬", target, 164, COLORS.red);
-    } else {
+      addFloating("큰 스킬", target, startY + 16, COLORS.red);
+    } else if (roll < orbCut) {
       projectile = {
         type: "orb",
         name: "죽음의 구체",
         x: target,
-        y: 148,
-        prevY: 148,
+        y: startY,
+        prevX: target,
+        prevY: startY,
         vy: phase >= 3 ? 154 : 134,
+        vx: 0,
         width: 52,
         height: 52,
         killRadius: 49,
@@ -2884,7 +2908,48 @@ html.has-mobile-controls .mobile-controls {
         spin: 0,
         dead: false
       };
-      addFloating("위험", target, 164, COLORS.purple);
+      addFloating("위험", target, startY + 16, COLORS.purple);
+    } else if (roll < sweepCut) {
+      const side = target < W / 2 ? 1 : -1;
+      projectile = {
+        type: "sweep",
+        name: "사선 절단",
+        x: clamp(target - side * 56, 34, W - 34),
+        y: startY,
+        prevX: target,
+        prevY: startY,
+        vy: phase >= 3 ? 214 : 188,
+        vx: side * (phase >= 3 ? 74 : 58),
+        width: 42,
+        height: 42,
+        killRadius: 33,
+        warn: 0.62,
+        life: 0,
+        spin: 0,
+        dead: false
+      };
+      addFloating("사선 공격", target, startY + 16, COLORS.gold);
+    } else {
+      const gap = phase >= 3 ? 40 : 48;
+      projectile = {
+        type: "rain",
+        name: "삼연 바늘",
+        x: target,
+        y: startY,
+        prevX: target,
+        prevY: startY,
+        vy: phase >= 3 ? 286 : 252,
+        vx: 0,
+        width: gap * 2 + 14,
+        height: 30,
+        killRadius: 20,
+        lanes: [-gap, 0, gap],
+        warn: 0.52,
+        life: 0,
+        spin: 0,
+        dead: false
+      };
+      addFloating("삼연 공격", target, startY + 16, COLORS.blue);
     }
     game.projectiles.push(projectile);
     bossMuzzle(projectile.x);
@@ -2895,9 +2960,9 @@ html.has-mobile-controls .mobile-controls {
     const shieldY = game.player.y - 32;
     const shieldW = 116;
     const reach = projectile.type === "wave" ? projectile.height : projectile.height * 0.45;
-    const horizontal = projectile.type === "wave"
-      ? Math.abs(projectile.x - game.player.x) < shieldW / 2 + projectile.width / 2
-      : Math.abs(projectile.x - game.player.x) < shieldW / 2 + projectile.width / 2;
+    const laneXs = projectile.lanes ? projectile.lanes.map((lane) => projectile.x + lane) : [projectile.x];
+    const halfWidth = projectile.type === "rain" ? 8 : projectile.width / 2;
+    const horizontal = laneXs.some((x) => Math.abs(x - game.player.x) < shieldW / 2 + halfWidth);
     const crosses = projectile.prevY + reach < shieldY && projectile.y + reach >= shieldY;
     if (horizontal && crosses) {
       burst(projectile.x, shieldY, COLORS.blue, 22, 160);
@@ -2928,6 +2993,15 @@ html.has-mobile-controls .mobile-controls {
         && Math.abs(projectile.y - tankY) < projectile.height / 2 + tankHalfH;
     } else if (projectile.type === "orb") {
       hit = dist(projectile.x, projectile.y, tankX, tankY) < projectile.killRadius + 6;
+    } else if (projectile.type === "rain") {
+      hit = projectile.lanes.some((lane) => {
+        const x = projectile.x + lane;
+        const top = tankY - tankHalfH;
+        const bottom = tankY + tankHalfH;
+        return Math.abs(x - tankX) < projectile.width / 8 + tankHalfW
+          && projectile.y + projectile.height / 2 >= top
+          && projectile.prevY - projectile.height / 2 <= bottom;
+      });
     } else {
       const top = tankY - tankHalfH;
       const bottom = tankY + tankHalfH;
@@ -2958,6 +3032,8 @@ html.has-mobile-controls .mobile-controls {
         hit = Math.abs(ally.x - projectile.x) < projectile.width / 2 && Math.abs(ally.y - projectile.y) < 24;
       } else if (projectile.type === "orb") {
         hit = dist(ally.x, ally.y, projectile.x, projectile.y) < projectile.killRadius;
+      } else if (projectile.type === "rain") {
+        hit = projectile.lanes.some((lane) => dist(ally.x, ally.y, projectile.x + lane, projectile.y) < projectile.killRadius);
       } else {
         hit = dist(ally.x, ally.y, projectile.x, projectile.y) < projectile.killRadius;
       }
@@ -2966,8 +3042,8 @@ html.has-mobile-controls .mobile-controls {
 
     if (victims.length === 0) return;
     const killedNow = victims.reduce((count, ally) => count + (killAlly(ally, projectile) ? 1 : 0), 0);
-    if (projectile.type === "orb") {
-      burst(projectile.x, projectile.y, COLORS.purple, 14, 80);
+    if (projectile.type === "orb" || projectile.type === "sweep") {
+      burst(projectile.x, projectile.y, projectile.type === "orb" ? COLORS.purple : COLORS.gold, 14, 80);
     }
     if (killedNow >= 2) {
       game.comboWindow = 0.22;
@@ -3141,13 +3217,16 @@ html.has-mobile-controls .mobile-controls {
   }
 
   function drawArena() {
-    ctx.fillStyle = COLORS.floor;
+    const theme = game.theme || arenaThemes[1];
+    ctx.fillStyle = theme.floor;
     ctx.fillRect(0, 0, W, H);
 
-    ctx.fillStyle = "#121722";
+    ctx.fillStyle = theme.top;
     ctx.fillRect(0, 0, W, 154);
 
-    ctx.fillStyle = COLORS.floor2;
+    drawThemeBackdrop(theme);
+
+    ctx.fillStyle = theme.floor2;
     for (let y = 154; y < H; y += 32) {
       for (let x = -24; x < W; x += 48) {
         const offset = ((y / 32) % 2) * 24;
@@ -3155,7 +3234,7 @@ html.has-mobile-controls .mobile-controls {
       }
     }
 
-    ctx.strokeStyle = COLORS.line;
+    ctx.strokeStyle = theme.line;
     ctx.lineWidth = 1;
     ctx.setLineDash([5, 6]);
     ctx.beginPath();
@@ -3164,16 +3243,61 @@ html.has-mobile-controls .mobile-controls {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    ctx.fillStyle = "rgba(101, 183, 255, 0.05)";
+    ctx.fillStyle = `${theme.accent}18`;
     ctx.fillRect(0, CONFIG.playerY - 42, W, 4);
 
-    drawPixelBanner();
+    drawPixelBanner(theme);
   }
 
-  function drawPixelBanner() {
-    ctx.fillStyle = "#252a37";
+  function drawThemeBackdrop(theme) {
+    if (theme.id === "volcano") {
+      rect(28, 82, 88, 72, "#321820");
+      rect(54, 58, 36, 28, "#4a1f24");
+      rect(66, 78, 12, 76, theme.accent);
+      for (let x = 8; x < W; x += 54) rect(x, 200 + Math.sin(game.time + x) * 2, 34, 3, "#ff6a3d66");
+    } else if (theme.id === "cave") {
+      for (let x = 16; x < W; x += 44) {
+        rect(x, 0, 16, 36 + (x % 3) * 9, "#252a37");
+        rect(x + 6, 32 + (x % 3) * 9, 4, 18, theme.accent);
+      }
+    } else if (theme.id === "sea") {
+      for (let y = 178; y < H; y += 42) {
+        ctx.globalAlpha = 0.22;
+        rect(0, y + Math.sin(game.time * 1.4 + y) * 4, W, 3, theme.accent);
+        ctx.globalAlpha = 1;
+      }
+      rect(266, 74, 34, 58, "#5b3a28");
+      rect(236, 68, 64, 8, "#2f7b63");
+    } else if (theme.id === "grass") {
+      for (let x = 0; x < W; x += 28) {
+        rect(x + 4, 174 + (x % 4), 3, 12, "#62d88f");
+        rect(x + 12, 182, 4, 9, "#3f9b62");
+      }
+      rect(34, 82, 26, 46, "#4b2e23");
+      rect(16, 58, 62, 34, "#2f7b45");
+    } else if (theme.id === "shrine") {
+      rect(42, 66, 86, 10, "#b64258");
+      rect(52, 76, 10, 62, "#7d2e40");
+      rect(108, 76, 10, 62, "#7d2e40");
+      for (let i = 0; i < 18; i += 1) {
+        const x = (i * 31 + game.time * 18) % (W + 24) - 12;
+        const y = 170 + ((i * 47) % 300);
+        rect(x, y + Math.sin(game.time * 2 + i) * 8, 5, 3, "#ffb6d0");
+      }
+    } else if (theme.id === "city") {
+      for (let x = 8; x < W; x += 38) {
+        const h = 46 + (x % 4) * 12;
+        rect(x, 154 - h, 28, h, "#252b38");
+        rect(x + 6, 120, 5, 5, theme.glow);
+        rect(x + 18, 96, 5, 5, theme.accent);
+      }
+    }
+  }
+
+  function drawPixelBanner(theme = arenaThemes[1]) {
+    ctx.fillStyle = theme.line;
     ctx.fillRect(32, 126, W - 64, 12);
-    ctx.fillStyle = "#3a4254";
+    ctx.fillStyle = theme.accent;
     for (let x = 40; x < W - 40; x += 16) ctx.fillRect(x, 130, 8, 4);
   }
 
@@ -3286,8 +3410,20 @@ html.has-mobile-controls .mobile-controls {
       const warnAlpha = clamp(p.warn / 0.75, 0, 1);
       if (p.warn > 0) {
         ctx.globalAlpha = 0.22 + warnAlpha * 0.18;
-        ctx.fillStyle = p.type === "wave" ? COLORS.red : p.type === "orb" ? COLORS.purple : COLORS.blue;
-        ctx.fillRect(Math.round(p.x - p.width / 2), 150, Math.round(p.width), H - 178);
+        ctx.fillStyle = p.type === "wave" ? COLORS.red : p.type === "orb" ? COLORS.purple : p.type === "sweep" ? COLORS.gold : COLORS.blue;
+        if (p.type === "rain") {
+          p.lanes.forEach((lane) => {
+            ctx.fillRect(Math.round(p.x + lane - 7), Math.round(game.boss.y + 58), 14, H - Math.round(game.boss.y + 86));
+          });
+        } else if (p.type === "sweep") {
+          ctx.save();
+          ctx.translate(Math.round(p.x), Math.round(game.boss.y + 250));
+          ctx.rotate(p.vx > 0 ? -0.26 : 0.26);
+          ctx.fillRect(-18, -260, 36, 520);
+          ctx.restore();
+        } else {
+          ctx.fillRect(Math.round(p.x - p.width / 2), Math.round(game.boss.y + 58), Math.round(p.width), H - Math.round(game.boss.y + 86));
+        }
         ctx.globalAlpha = 1;
       }
 
@@ -3303,6 +3439,22 @@ html.has-mobile-controls .mobile-controls {
         rect(p.x - 25, p.y - 8, 50, 16, "#7f45d6");
         rect(p.x - 8, p.y - 25, 16, 50, "#7f45d6");
         rect(p.x - 8, p.y - 8, 16, 16, "#f0d3ff");
+      } else if (p.type === "sweep") {
+        ctx.save();
+        ctx.translate(Math.round(p.x), Math.round(p.y));
+        ctx.rotate(p.spin * (p.vx > 0 ? 1 : -1));
+        rect(-18, -4, 36, 8, COLORS.gold);
+        rect(-4, -18, 8, 36, "#fff0a8");
+        rect(-8, -8, 16, 16, COLORS.red);
+        ctx.restore();
+      } else if (p.type === "rain") {
+        p.lanes.forEach((lane, index) => {
+          const x = p.x + lane;
+          const y = p.y - index * 8;
+          rect(x - 5, y - 18, 10, 36, "#d5f4ff");
+          rect(x - 9, y - 8, 18, 14, COLORS.blue2);
+          rect(x - 3, y + 17, 6, 12, COLORS.blue);
+        });
       } else {
         rect(p.x - 5, p.y - 18, 10, 36, "#d5f4ff");
         rect(p.x - 9, p.y - 8, 18, 14, COLORS.blue2);
