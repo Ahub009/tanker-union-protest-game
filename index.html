@@ -162,6 +162,10 @@ canvas {
   display: none;
 }
 
+.hidden {
+  display: none !important;
+}
+
 .panel {
   width: min(100%, 360px);
   border: 1px solid rgba(255, 255, 255, 0.13);
@@ -2083,27 +2087,26 @@ html.has-mobile-controls .mobile-controls {
   function prepareRankingSubmit() {
     const date = todayKst();
     const isWin = game.endReason === "party";
+    const rankingBox = document.getElementById("rankingSubmitBox");
     document.getElementById("rankingDate").textContent = date;
     document.getElementById("endRankingDate").textContent = date;
+    rankingBox.classList.toggle("hidden", !isWin);
+    if (!isWin) return;
     const input = document.getElementById("nicknameInput");
     const randomButton = document.getElementById("randomNameBtn");
     const submitButton = document.getElementById("submitScoreBtn");
     const nickname = loadNickname() || randomNickname();
     input.value = nickname;
     saveNickname(nickname);
-    input.disabled = !isWin || !isRankingConfigured();
-    randomButton.disabled = !isWin || !isRankingConfigured();
-    submitButton.disabled = !isWin || !isRankingConfigured();
-    submitButton.textContent = isWin ? "랭킹 등록" : "게임오버 등록 불가";
-    if (!isWin) {
-      setRankingStatus("게임오버 기록은 랭킹에 등록할 수 없습니다.", "bad");
-    } else {
-      setRankingStatus(
-        isRankingConfigured()
-          ? "닉네임을 확인하고 오늘 랭킹에 등록하세요."
-          : "Supabase URL과 anon key를 설정하면 전역 랭킹 등록이 켜집니다."
-      );
-    }
+    input.disabled = !isRankingConfigured();
+    randomButton.disabled = !isRankingConfigured();
+    submitButton.disabled = !isRankingConfigured();
+    submitButton.textContent = "랭킹 등록";
+    setRankingStatus(
+      isRankingConfigured()
+        ? "닉네임을 확인하고 오늘 랭킹에 등록하세요."
+        : "Supabase URL과 anon key를 설정하면 전역 랭킹 등록이 켜집니다."
+    );
     updateEndRankSummary();
   }
 
