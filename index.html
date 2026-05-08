@@ -63,9 +63,70 @@ canvas {
   background: #151924;
 }
 
+.mobile-controls {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  z-index: 8;
+  display: none;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 18px;
+  pointer-events: none;
+  touch-action: none;
+}
+
+.mobile-move {
+  display: flex;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+.mobile-btn {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
+  border: 2px solid rgba(243, 239, 230, 0.24);
+  border-radius: 8px;
+  background: rgba(13, 16, 24, 0.62);
+  color: var(--ink);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+  font-weight: 900;
+  font-size: 28px;
+  line-height: 1;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  backdrop-filter: blur(6px);
+}
+
+.mobile-btn.is-active {
+  transform: scale(0.96);
+  border-color: rgba(246, 200, 95, 0.82);
+  background: rgba(246, 200, 95, 0.24);
+}
+
+.mobile-shield {
+  width: 92px;
+  height: 92px;
+  border-color: rgba(101, 183, 255, 0.48);
+  color: #17120a;
+  background: rgba(246, 200, 95, 0.84);
+  font-size: 15px;
+}
+
+.mobile-shield.is-active {
+  background: rgba(101, 183, 255, 0.84);
+  color: var(--ink);
+}
+
 .overlay {
   position: absolute;
   inset: 0;
+  z-index: 20;
   display: grid;
   place-items: center;
   padding: 24px;
@@ -833,6 +894,12 @@ h2 {
   overflow-y: auto;
 }
 
+@media (hover: none) and (pointer: coarse) {
+  .mobile-controls {
+    display: flex;
+  }
+}
+
 @media (max-width: 420px) {
   .panel {
     padding: 18px;
@@ -847,6 +914,14 @@ h2 {
 <body>
 <main class="stage-shell" aria-label="배신자 웹 게임">
   <canvas id="game" width="360" height="640"></canvas>
+
+  <div class="mobile-controls" aria-label="모바일 조작">
+    <div class="mobile-move">
+      <button class="mobile-btn" id="touchLeft" type="button" aria-label="왼쪽 이동">‹</button>
+      <button class="mobile-btn" id="touchRight" type="button" aria-label="오른쪽 이동">›</button>
+    </div>
+    <button class="mobile-btn mobile-shield" id="touchShield" type="button" aria-label="방패 들기">방패</button>
+  </div>
 
   <section class="overlay" id="menu">
     <div class="panel">
@@ -865,7 +940,7 @@ h2 {
 
       <div class="guide-section">
         <h3>목표</h3>
-        <p>보스 HP가 0이 되기 전에 아군 12명을 모두 탈락시키면 승리합니다.</p>
+        <p>보스 HP가 0이 되기 전에 아군 15명을 모두 탈락시키면 승리합니다.</p>
         <p>아군이 살아남거나 보스가 먼저 쓰러지면 생존자들이 신고해서 게임오버입니다.</p>
       </div>
 
@@ -874,6 +949,7 @@ h2 {
         <p><b>← / →</b>: 탱커 좌우 이동</p>
         <p><b>Space 누르기</b>: 방패 전개. 아군이 탱커 뒤로 모이고 공격을 막습니다.</p>
         <p><b>Space 떼기</b>: 방패 해제. 짧은 시간 동안 아군 꼬리가 따라오며 보스 공격에 노출됩니다.</p>
+        <p><b>모바일</b>: 화면 왼쪽 버튼으로 좌우 이동, 오른쪽 방패 버튼을 누르고 떼서 방패를 전개/해제합니다.</p>
       </div>
 
       <div class="guide-section">
@@ -1285,10 +1361,53 @@ h2 {
   document.getElementById("menuBtn").addEventListener("click", () => {
     game = makeGame("menu");
     seedMenu();
+    releaseAllInputs();
     menu.classList.remove("hidden");
     guide.classList.add("hidden");
     end.classList.add("hidden");
   });
+
+  bindHoldButton("touchLeft", "left");
+  bindHoldButton("touchRight", "right");
+  bindHoldButton("touchShield", "shield");
+
+  function bindHoldButton(id, key) {
+    const button = document.getElementById(id);
+    if (!button) return;
+
+    const setActive = (active) => {
+      keys[key] = active;
+      button.classList.toggle("is-active", active);
+    };
+
+    button.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      try {
+        button.setPointerCapture?.(event.pointerId);
+      } catch {
+        // Synthetic pointer events in automated tests may not own a pointer id.
+      }
+      setActive(true);
+    });
+
+    ["pointerup", "pointercancel", "lostpointercapture"].forEach((type) => {
+      button.addEventListener(type, (event) => {
+        event.preventDefault();
+        setActive(false);
+      });
+    });
+
+    button.addEventListener("contextmenu", (event) => event.preventDefault());
+  }
+
+  function releaseAllInputs() {
+    keys.left = false;
+    keys.right = false;
+    keys.shield = false;
+    document.querySelectorAll(".mobile-btn.is-active").forEach((button) => {
+      button.classList.remove("is-active");
+    });
+  }
 
   window.addEventListener("keydown", (event) => {
     if (event.code === "ArrowLeft" || event.code === "KeyA") {
@@ -1324,10 +1443,9 @@ h2 {
     }
   });
 
-  window.addEventListener("blur", () => {
-    keys.left = false;
-    keys.right = false;
-    keys.shield = false;
+  window.addEventListener("blur", releaseAllInputs);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) releaseAllInputs();
   });
 
   function seedMenu() {
@@ -1341,6 +1459,7 @@ h2 {
 
   function startGame() {
     game = makeGame("play");
+    releaseAllInputs();
     menu.classList.add("hidden");
     guide.classList.add("hidden");
     end.classList.add("hidden");
@@ -1354,7 +1473,7 @@ h2 {
     game.ended = true;
     game.mode = "end";
     game.endReason = reason;
-    keys.shield = false;
+    releaseAllInputs();
 
     const alive = livingAllies().length;
     if (win && game.mission?.id === "highSuspicionWin" && game.suspicion >= 70) {
