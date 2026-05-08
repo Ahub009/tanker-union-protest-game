@@ -1501,11 +1501,11 @@ html.has-mobile-controls .mobile-controls {
   };
 
   const CONFIG = {
-    bossHp: 4140,
+    bossHp: 3500,
     spawnEvery: 2,
     maxLivingAllies: 15,
     highScoreKills: 30,
-    bossY: 134,
+    bossY: 158,
     playerY: 448,
     allyBaseY: 506,
     suspicionMax: 100,
@@ -2745,13 +2745,14 @@ html.has-mobile-controls .mobile-controls {
     const phase = bossPhase();
     if (game.attackClock <= 0) {
       launchAttack();
-      if (phase >= 4 && Math.random() < 0.58) {
+      if (phase >= 3) {
         launchAttack(random(-76, 76));
         addFloating("연속 2타", game.boss.x, game.boss.y + 64, COLORS.red);
       }
-      if (phase >= 4) game.attackClock = random(0.9, 1.45);
-      else if (phase >= 3) game.attackClock = random(1.05, 1.75);
-      else if (phase >= 2) game.attackClock = random(1.2, 2.05);
+      if (phase >= 4) {
+        game.attackClock = Math.random() < 0.45 ? random(0.48, 0.9) : random(1.18, 2.05);
+      } else if (phase >= 3) game.attackClock = random(0.98, 1.55);
+      else if (phase >= 2) game.attackClock = random(1.15, 1.85);
       else game.attackClock = random(1.45, 2.35);
     }
 
@@ -2831,8 +2832,8 @@ html.has-mobile-controls .mobile-controls {
   function bossPhase() {
     const hpRatio = game.boss.hp / game.boss.maxHp;
     if (hpRatio <= 0.2) return 4;
-    if (hpRatio <= 0.4) return 3;
-    if (hpRatio <= 0.7) return 2;
+    if (hpRatio <= 0.5) return 3;
+    if (hpRatio <= 0.8) return 2;
     return 1;
   }
 
