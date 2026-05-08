@@ -1814,6 +1814,7 @@ html.has-mobile-controls .mobile-controls {
       blockWindow: 0,
       spawnClock: 0.15,
       attackClock: 2.25,
+      bossAttackCount: 0,
       nextChat: 1.3,
       comboWindow: 0,
       comboKills: 0,
@@ -2744,15 +2745,18 @@ html.has-mobile-controls .mobile-controls {
     game.attackClock -= dt;
     const phase = bossPhase();
     if (game.attackClock <= 0) {
+      game.bossAttackCount += 1;
       launchAttack();
-      if (phase >= 3) {
+      const doubleAttack = phase >= 4 || (phase >= 3 && game.bossAttackCount % 3 === 0);
+      if (doubleAttack) {
         launchAttack(random(-76, 76));
         addFloating("연속 2타", game.boss.x, game.boss.y + 64, COLORS.red);
       }
       if (phase >= 4) {
-        game.attackClock = Math.random() < 0.45 ? random(0.48, 0.9) : random(1.18, 2.05);
-      } else if (phase >= 3) game.attackClock = random(0.98, 1.55);
-      else if (phase >= 2) game.attackClock = random(1.15, 1.85);
+        game.attackClock = Math.random() < 0.45 ? random(0.54, 0.94) : random(1.15, 1.9);
+      } else if (phase >= 3) {
+        game.attackClock = Math.random() < 0.42 ? random(0.72, 1.06) : random(1.28, 1.82);
+      } else if (phase >= 2) game.attackClock = random(1.15, 1.85);
       else game.attackClock = random(1.45, 2.35);
     }
 
@@ -2832,7 +2836,8 @@ html.has-mobile-controls .mobile-controls {
   function bossPhase() {
     const hpRatio = game.boss.hp / game.boss.maxHp;
     if (hpRatio <= 0.2) return 4;
-    if (hpRatio <= 0.5) return 3;
+    if (hpRatio <= 0.4) return 3;
+    if (hpRatio <= 0.6) return 2.5;
     if (hpRatio <= 0.8) return 2;
     return 1;
   }
@@ -2841,6 +2846,7 @@ html.has-mobile-controls .mobile-controls {
     const phase = bossPhase();
     if (phase >= 4) return "분노 3";
     if (phase >= 3) return "분노 2";
+    if (phase >= 2.5) return "엇박";
     if (phase >= 2) return "분노 1";
     return "평온";
   }
