@@ -235,6 +235,138 @@ h2 {
   color: var(--ink);
 }
 
+.ranking-panel {
+  max-height: calc(100dvh - 42px);
+  overflow-y: auto;
+}
+
+.ranking-box {
+  margin: 14px 0;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(8, 10, 16, 0.34);
+}
+
+.ranking-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 8px;
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.ranking-date {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.ranking-list {
+  display: grid;
+  gap: 6px;
+}
+
+.rank-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 74px;
+  gap: 8px;
+  align-items: center;
+  min-height: 30px;
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 11px;
+}
+
+.rank-place {
+  color: var(--gold);
+  font-weight: 900;
+}
+
+.rank-name {
+  overflow: hidden;
+  color: var(--ink);
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rank-score {
+  color: var(--red);
+  font-weight: 900;
+  text-align: right;
+}
+
+.rank-meta {
+  grid-column: 2 / 4;
+  color: var(--muted);
+  font-size: 10px;
+  text-align: left;
+}
+
+.rank-message {
+  min-height: 34px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+  white-space: pre-line;
+}
+
+.ranking-submit {
+  margin: 12px 0 0;
+}
+
+.nickname-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 74px;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.nickname-input {
+  min-width: 0;
+  height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--ink);
+  padding: 0 10px;
+  font: inherit;
+  font-weight: 800;
+}
+
+.nickname-input::placeholder {
+  color: rgba(243, 239, 230, 0.42);
+}
+
+.compact-btn {
+  min-height: 42px;
+  margin-top: 0;
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+.rank-status {
+  min-height: 18px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.rank-status.good {
+  color: var(--green);
+}
+
+.rank-status.bad {
+  color: var(--red);
+}
+
 .result-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -935,6 +1067,7 @@ html.has-mobile-controls .mobile-controls {
       <p class="copy">보스가 쓰러지기 전에 뒤에 붙은 파티원을 먼저 정리하세요. 방패는 믿음을 모으고, 해제는 기록을 만듭니다.</p>
       <button class="primary" id="startBtn">작전 개시</button>
       <button class="secondary" id="guideBtn">게임 설명</button>
+      <button class="secondary" id="rankingBtn">오늘의 랭킹</button>
     </div>
   </section>
 
@@ -987,6 +1120,19 @@ html.has-mobile-controls .mobile-controls {
 
       <button class="primary" id="guideStartBtn">바로 작전 개시</button>
       <button class="secondary" id="guideBackBtn">돌아가기</button>
+    </div>
+  </section>
+
+  <section class="overlay hidden" id="ranking">
+    <div class="panel ranking-panel">
+      <p class="kicker">탱커노조 전광판</p>
+      <h2>오늘의 TOP 10</h2>
+      <p class="copy">한국 시간 기준으로 오늘 등록된 최고 신고 점수입니다.</p>
+      <div class="ranking-box">
+        <p class="ranking-title">오늘의 랭킹 <span class="ranking-date" id="rankingDate">--</span></p>
+        <div class="ranking-list" id="rankingList"></div>
+      </div>
+      <button class="secondary" id="rankingBackBtn">돌아가기</button>
     </div>
   </section>
 
@@ -1084,6 +1230,16 @@ html.has-mobile-controls .mobile-controls {
         <div class="result-cell">생존<b id="statAlive">0</b></div>
         <div class="result-cell">신고<b id="statReports">0</b></div>
       </div>
+      <div class="ranking-box ranking-submit" id="rankingSubmitBox">
+        <p class="ranking-title">오늘의 랭킹 등록 <span class="ranking-date" id="endRankingDate">--</span></p>
+        <div class="nickname-row">
+          <input class="nickname-input" id="nicknameInput" type="text" maxlength="12" autocomplete="nickname" placeholder="닉네임" />
+          <button class="secondary compact-btn" id="randomNameBtn" type="button">랜덤</button>
+        </div>
+        <button class="primary" id="submitScoreBtn" type="button">랭킹 등록</button>
+        <p class="rank-status" id="rankingStatus"></p>
+        <div class="ranking-list" id="endRankingList"></div>
+      </div>
       <button class="primary" id="againBtn">다시 파업</button>
       <button class="secondary" id="menuBtn">로비로 나가기</button>
     </div>
@@ -1100,6 +1256,7 @@ html.has-mobile-controls .mobile-controls {
   const H = canvas.height;
   const menu = document.getElementById("menu");
   const guide = document.getElementById("guide");
+  const ranking = document.getElementById("ranking");
   const end = document.getElementById("end");
   const mobileControls = document.querySelector(".mobile-controls");
   const mobileControlsQuery = window.matchMedia("(max-width: 720px)");
@@ -1139,6 +1296,14 @@ html.has-mobile-controls .mobile-controls {
     betrayalEarly: 0.15,
     betrayalLate: 0.85
   };
+
+  const SUPABASE_CONFIG = {
+    url: "",
+    anonKey: "",
+    table: "betrayal_rankings"
+  };
+
+  const NICKNAME_KEY = "tanker_union_nickname";
 
   const allyTypes = [
     { role: "딜러", color: "#ff715b", accent: "#ffd15c", dps: 5.2, report: 14 },
@@ -1354,6 +1519,7 @@ html.has-mobile-controls .mobile-controls {
       nextChat: 1.3,
       comboWindow: 0,
       comboKills: 0,
+      rankSubmitted: false,
       ended: false,
       endReason: ""
     };
@@ -1368,6 +1534,17 @@ html.has-mobile-controls .mobile-controls {
   document.getElementById("guideBtn").addEventListener("click", () => {
     menu.classList.add("hidden");
     guide.classList.remove("hidden");
+    ranking.classList.add("hidden");
+  });
+  document.getElementById("rankingBtn").addEventListener("click", () => {
+    menu.classList.add("hidden");
+    guide.classList.add("hidden");
+    ranking.classList.remove("hidden");
+    refreshRankings(document.getElementById("rankingList"));
+  });
+  document.getElementById("rankingBackBtn").addEventListener("click", () => {
+    ranking.classList.add("hidden");
+    menu.classList.remove("hidden");
   });
   document.getElementById("guideBackBtn").addEventListener("click", () => {
     guide.classList.add("hidden");
@@ -1375,12 +1552,19 @@ html.has-mobile-controls .mobile-controls {
   });
   document.getElementById("guideStartBtn").addEventListener("click", startGame);
   document.getElementById("againBtn").addEventListener("click", startGame);
+  document.getElementById("randomNameBtn").addEventListener("click", () => {
+    const nickname = randomNickname();
+    document.getElementById("nicknameInput").value = nickname;
+    saveNickname(nickname);
+  });
+  document.getElementById("submitScoreBtn").addEventListener("click", submitRankingScore);
   document.getElementById("menuBtn").addEventListener("click", () => {
     game = makeGame("menu");
     seedMenu();
     releaseAllInputs();
     menu.classList.remove("hidden");
     guide.classList.add("hidden");
+    ranking.classList.add("hidden");
     end.classList.add("hidden");
   });
 
@@ -1566,6 +1750,7 @@ html.has-mobile-controls .mobile-controls {
     releaseAllInputs();
     menu.classList.add("hidden");
     guide.classList.add("hidden");
+    ranking.classList.add("hidden");
     end.classList.add("hidden");
     startMission();
     addChat("게임 시작");
@@ -1599,9 +1784,209 @@ html.has-mobile-controls .mobile-controls {
     document.getElementById("statKills").textContent = String(game.killed);
     document.getElementById("statAlive").textContent = String(alive);
     document.getElementById("statReports").textContent = String(game.reports);
+    prepareRankingSubmit();
     end.classList.remove("hidden");
     addChat(systemMessage);
     addChat(win ? "POTG: 방패 해제" : "리폿 눌렀음");
+  }
+
+  function prepareRankingSubmit() {
+    const date = todayKst();
+    document.getElementById("rankingDate").textContent = date;
+    document.getElementById("endRankingDate").textContent = date;
+    const input = document.getElementById("nicknameInput");
+    const nickname = loadNickname() || randomNickname();
+    input.value = nickname;
+    saveNickname(nickname);
+    setRankingStatus(
+      isRankingConfigured()
+        ? "닉네임을 확인하고 오늘 랭킹에 등록하세요."
+        : "Supabase URL과 anon key를 설정하면 전역 랭킹 등록이 켜집니다."
+    );
+    document.getElementById("submitScoreBtn").disabled = !isRankingConfigured();
+    refreshRankings(document.getElementById("endRankingList"));
+  }
+
+  async function submitRankingScore() {
+    const status = document.getElementById("rankingStatus");
+    if (!isRankingConfigured()) {
+      setRankingStatus("Supabase 설정이 아직 비어 있습니다.", "bad");
+      return;
+    }
+    if (!game.ended || game.rankSubmitted) return;
+
+    const input = document.getElementById("nicknameInput");
+    const nickname = cleanNickname(input.value) || randomNickname();
+    input.value = nickname;
+    saveNickname(nickname);
+
+    const button = document.getElementById("submitScoreBtn");
+    button.disabled = true;
+    setRankingStatus("랭킹 등록 중...");
+
+    try {
+      await saveRanking({
+        nickname,
+        score: game.reports,
+        kills: game.killed,
+        alive: livingAllies().length,
+        bossHpLeft: Math.max(0, Math.round(game.boss.hp)),
+        bossHpMax: Math.max(1, Math.round(game.boss.maxHp)),
+        endReason: game.endReason || "unknown",
+        win: game.endReason === "party",
+        playDate: todayKst()
+      });
+      game.rankSubmitted = true;
+      setRankingStatus("오늘 랭킹에 등록되었습니다.", "good");
+      await refreshRankings(document.getElementById("endRankingList"));
+    } catch (error) {
+      button.disabled = false;
+      setRankingStatus("랭킹 등록 실패. Supabase 설정과 RLS를 확인하세요.", "bad");
+    }
+  }
+
+  async function refreshRankings(container) {
+    if (!container) return;
+    document.getElementById("rankingDate").textContent = todayKst();
+    document.getElementById("endRankingDate").textContent = todayKst();
+    if (!isRankingConfigured()) {
+      renderRankingMessage(container, "Supabase 설정 대기 중\nProject URL과 anon key를 넣으면 표시됩니다.");
+      return;
+    }
+
+    renderRankingMessage(container, "랭킹 불러오는 중...");
+    try {
+      renderRankings(container, await loadRankings());
+    } catch (error) {
+      renderRankingMessage(container, "랭킹을 불러오지 못했습니다.");
+    }
+  }
+
+  async function saveRanking(payload) {
+    return supabaseRequest("rpc/submit_betrayal_score", {
+      method: "POST",
+      body: JSON.stringify({
+        p_nickname: payload.nickname,
+        p_score: payload.score,
+        p_kills: payload.kills,
+        p_alive: payload.alive,
+        p_boss_hp_left: payload.bossHpLeft,
+        p_boss_hp_max: payload.bossHpMax,
+        p_end_reason: payload.endReason,
+        p_win: payload.win,
+        p_play_date: payload.playDate
+      })
+    });
+  }
+
+  async function loadRankings() {
+    const query = `${SUPABASE_CONFIG.table}?select=nickname,score,kills,alive,boss_hp_left,created_at&play_date=eq.${todayKst()}&order=score.desc,created_at.asc&limit=10`;
+    return supabaseRequest(query);
+  }
+
+  async function supabaseRequest(path, options = {}) {
+    const base = SUPABASE_CONFIG.url.replace(/\/$/, "");
+    const response = await fetch(`${base}/rest/v1/${path}`, {
+      ...options,
+      headers: {
+        apikey: SUPABASE_CONFIG.anonKey,
+        Authorization: `Bearer ${SUPABASE_CONFIG.anonKey}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+        ...(options.headers || {})
+      }
+    });
+    if (!response.ok) throw new Error(await response.text());
+    if (response.status === 204) return null;
+    return response.json();
+  }
+
+  function renderRankings(container, rows) {
+    container.replaceChildren();
+    if (!rows || rows.length === 0) {
+      renderRankingMessage(container, "아직 등록된 기록이 없습니다.");
+      return;
+    }
+    rows.forEach((row, index) => {
+      const item = document.createElement("div");
+      item.className = "rank-row";
+
+      const place = document.createElement("div");
+      place.className = "rank-place";
+      place.textContent = `#${index + 1}`;
+
+      const name = document.createElement("div");
+      name.className = "rank-name";
+      name.textContent = row.nickname;
+
+      const score = document.createElement("div");
+      score.className = "rank-score";
+      score.textContent = Number(row.score || 0).toLocaleString("ko-KR");
+
+      const meta = document.createElement("div");
+      meta.className = "rank-meta";
+      meta.textContent = `처리 ${row.kills || 0} · 생존 ${row.alive || 0} · 보스HP ${row.boss_hp_left || 0}`;
+
+      item.append(place, name, score, meta);
+      container.append(item);
+    });
+  }
+
+  function renderRankingMessage(container, text) {
+    container.replaceChildren();
+    const message = document.createElement("div");
+    message.className = "rank-message";
+    message.textContent = text;
+    container.append(message);
+  }
+
+  function setRankingStatus(text, tone = "") {
+    const status = document.getElementById("rankingStatus");
+    status.textContent = text;
+    status.className = `rank-status ${tone}`.trim();
+  }
+
+  function isRankingConfigured() {
+    return /^https:\/\/.+\.supabase\.co$/i.test(SUPABASE_CONFIG.url)
+      && SUPABASE_CONFIG.anonKey.length > 20;
+  }
+
+  function todayKst() {
+    const parts = new Intl.DateTimeFormat("en", {
+      timeZone: "Asia/Seoul",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).formatToParts(new Date());
+    const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+    return `${value.year}-${value.month}-${value.day}`;
+  }
+
+  function cleanNickname(value) {
+    return String(value || "")
+      .trim()
+      .replace(/\s+/g, "")
+      .replace(/[^\u3131-\u318e\uac00-\ud7a3a-zA-Z0-9_-]/g, "")
+      .slice(0, 12);
+  }
+
+  function loadNickname() {
+    try {
+      return cleanNickname(localStorage.getItem(NICKNAME_KEY));
+    } catch {
+      return "";
+    }
+  }
+
+  function saveNickname(nickname) {
+    try {
+      localStorage.setItem(NICKNAME_KEY, cleanNickname(nickname));
+    } catch {}
+  }
+
+  function randomNickname() {
+    const names = ["김탱커", "방패노동자", "노조원", "철벽시위대", "방패반장", "파업탱커", "전장내부자"];
+    return `${randomPick(names)}${Math.floor(random(100, 999))}`;
   }
 
   function resultGrade(win, reason, alive) {
