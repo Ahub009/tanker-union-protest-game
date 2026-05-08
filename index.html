@@ -894,7 +894,11 @@ h2 {
   overflow-y: auto;
 }
 
-@media (hover: none) and (pointer: coarse) {
+html.has-mobile-controls .mobile-controls {
+  display: flex;
+}
+
+@media (max-width: 720px), (hover: none), (pointer: coarse), (any-pointer: coarse) {
   .mobile-controls {
     display: flex;
   }
@@ -1095,6 +1099,7 @@ h2 {
   const menu = document.getElementById("menu");
   const guide = document.getElementById("guide");
   const end = document.getElementById("end");
+  const mobileControlsQuery = window.matchMedia("(max-width: 720px)");
 
   const COLORS = {
     floor: "#1a2030",
@@ -1344,6 +1349,7 @@ h2 {
   }
 
   game = makeGame();
+  updateMobileControlMode();
   seedMenu();
   requestAnimationFrame(loop);
 
@@ -1408,6 +1414,19 @@ h2 {
       button.classList.remove("is-active");
     });
   }
+
+  function updateMobileControlMode() {
+    const hasTouch =
+      navigator.maxTouchPoints > 0 ||
+      "ontouchstart" in window ||
+      window.matchMedia("(any-pointer: coarse)").matches;
+    document.documentElement.classList.toggle(
+      "has-mobile-controls",
+      hasTouch || mobileControlsQuery.matches
+    );
+  }
+
+  mobileControlsQuery.addEventListener?.("change", updateMobileControlMode);
 
   window.addEventListener("keydown", (event) => {
     if (event.code === "ArrowLeft" || event.code === "KeyA") {
