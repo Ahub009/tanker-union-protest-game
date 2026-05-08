@@ -55,6 +55,30 @@ button {
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
 }
 
+.audio-toggle {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  right: 10px;
+  z-index: 12;
+  min-height: 30px;
+  margin: 0;
+  padding: 0 9px;
+  border: 1px solid rgba(246, 200, 95, 0.44);
+  border-radius: 8px;
+  background: rgba(8, 10, 16, 0.68);
+  color: var(--gold);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+}
+
+.audio-toggle.is-muted {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--muted);
+}
+
 canvas {
   display: block;
   width: 100%;
@@ -1174,6 +1198,8 @@ html.has-mobile-controls .mobile-controls {
 <body>
 <main class="stage-shell" aria-label="배신자 웹 게임">
   <canvas id="game" width="360" height="640"></canvas>
+  <audio id="bgm" src="Shock%20The%20World%20(Melody%20Version).mp3" preload="auto" loop></audio>
+  <button class="audio-toggle is-muted" id="audioToggle" type="button" aria-pressed="true">BGM OFF</button>
 
   <div class="mobile-controls" aria-label="모바일 조작">
     <div class="mobile-move">
@@ -1389,6 +1415,8 @@ html.has-mobile-controls .mobile-controls {
   const ranking = document.getElementById("ranking");
   const end = document.getElementById("end");
   const mobileControls = document.querySelector(".mobile-controls");
+  const bgm = document.getElementById("bgm");
+  const audioToggle = document.getElementById("audioToggle");
   const mobileControlsQuery = window.matchMedia("(max-width: 720px)");
   const mobileButtons = {
     left: document.getElementById("touchLeft"),
@@ -1397,6 +1425,7 @@ html.has-mobile-controls .mobile-controls {
   };
   const activeTouches = new Map();
   const activePointers = new Map();
+  let bgmStarted = false;
 
   const COLORS = {
     floor: "#1a2030",
@@ -1434,6 +1463,7 @@ html.has-mobile-controls .mobile-controls {
   };
 
   const NICKNAME_KEY = "tanker_union_nickname";
+  const BGM_MUTED_KEY = "tanker_union_bgm_muted";
 
   const allyTypes = [
     { role: "딜러", color: "#ff715b", accent: "#ffd15c", dps: 5.2, report: 14 },
@@ -1622,6 +1652,45 @@ html.has-mobile-controls .mobile-controls {
   let game = null;
   let lastTime = performance.now();
 
+  function loadBgmMuted() {
+    try {
+      return localStorage.getItem(BGM_MUTED_KEY) === "1";
+    } catch {
+      return true;
+    }
+  }
+
+  function saveBgmMuted(muted) {
+    try {
+      localStorage.setItem(BGM_MUTED_KEY, muted ? "1" : "0");
+    } catch {}
+  }
+
+  function updateAudioButton() {
+    const muted = bgm.muted;
+    audioToggle.textContent = muted ? "BGM OFF" : "BGM ON";
+    audioToggle.classList.toggle("is-muted", muted);
+    audioToggle.setAttribute("aria-pressed", String(muted));
+  }
+
+  function tryPlayBgm() {
+    if (bgm.muted) return;
+    bgmStarted = true;
+    bgm.volume = 0.46;
+    const playAttempt = bgm.play();
+    if (playAttempt?.catch) playAttempt.catch(() => {});
+  }
+
+  function toggleBgm() {
+    bgm.muted = !bgm.muted;
+    saveBgmMuted(bgm.muted);
+    updateAudioButton();
+    if (!bgm.muted) tryPlayBgm();
+  }
+
+  bgm.muted = loadBgmMuted();
+  updateAudioButton();
+
   function makeGame(mode = "menu") {
     return {
       mode,
@@ -1687,6 +1756,7 @@ html.has-mobile-controls .mobile-controls {
   seedMenu();
   requestAnimationFrame(loop);
 
+  audioToggle.addEventListener("click", toggleBgm);
   document.getElementById("startBtn").addEventListener("click", startGame);
   document.getElementById("guideBtn").addEventListener("click", () => {
     menu.classList.add("hidden");
@@ -1891,6 +1961,8 @@ html.has-mobile-controls .mobile-controls {
   window.addEventListener("blur", releaseAllInputs);
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) releaseAllInputs();
+    if (document.hidden) bgm.pause();
+    else if (bgmStarted && !bgm.muted) tryPlayBgm();
   });
 
   function seedMenu() {
@@ -1904,6 +1976,7 @@ html.has-mobile-controls .mobile-controls {
 
   function startGame() {
     game = makeGame("play");
+    tryPlayBgm();
     releaseAllInputs();
     menu.classList.add("hidden");
     guide.classList.add("hidden");
