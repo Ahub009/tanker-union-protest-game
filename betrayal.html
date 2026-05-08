@@ -367,6 +367,21 @@ h2 {
   color: var(--red);
 }
 
+.lore-box {
+  text-align: left;
+}
+
+.lore-text {
+  margin: 7px 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.lore-text b {
+  color: var(--ink);
+}
+
 .result-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -386,6 +401,58 @@ h2 {
   white-space: pre-line;
 }
 
+.result-panel.win-result {
+  border-color: rgba(246, 200, 95, 0.42);
+}
+
+.result-panel.strike-warning {
+  background:
+    linear-gradient(180deg, rgba(181, 108, 255, 0.22), rgba(20, 22, 31, 0.95) 42%),
+    rgba(20, 22, 31, 0.96);
+  box-shadow: 0 18px 48px rgba(181, 108, 255, 0.2);
+}
+
+.result-panel.strike-partial {
+  background:
+    linear-gradient(180deg, rgba(255, 94, 87, 0.23), rgba(20, 22, 31, 0.95) 42%),
+    rgba(20, 22, 31, 0.96);
+  box-shadow: 0 18px 52px rgba(255, 94, 87, 0.22);
+}
+
+.result-panel.strike-total,
+.result-panel.strike-legend {
+  background:
+    linear-gradient(180deg, rgba(246, 200, 95, 0.28), rgba(20, 22, 31, 0.95) 44%),
+    rgba(20, 22, 31, 0.96);
+  box-shadow: 0 18px 58px rgba(246, 200, 95, 0.24);
+}
+
+.result-panel.strike-legend {
+  border-color: rgba(246, 200, 95, 0.82);
+  box-shadow:
+    0 0 0 1px rgba(246, 200, 95, 0.18),
+    0 18px 64px rgba(246, 200, 95, 0.36);
+}
+
+.result-panel.strike-warning .system-notice {
+  border-color: rgba(181, 108, 255, 0.48);
+  background: rgba(181, 108, 255, 0.1);
+  color: #d8b8ff;
+}
+
+.result-panel.strike-partial .system-notice {
+  border-color: rgba(255, 94, 87, 0.46);
+  background: rgba(255, 94, 87, 0.1);
+  color: #ff9a94;
+}
+
+.result-panel.strike-total .system-notice,
+.result-panel.strike-legend .system-notice {
+  border-color: rgba(246, 200, 95, 0.56);
+  background: rgba(246, 200, 95, 0.13);
+  color: var(--gold);
+}
+
 .result-scene {
   position: relative;
   height: 132px;
@@ -396,6 +463,62 @@ h2 {
   background:
     linear-gradient(180deg, rgba(101, 183, 255, 0.1), rgba(255, 255, 255, 0.02) 54%),
     #121620;
+}
+
+.result-scene.win.strike-warning {
+  border-color: rgba(181, 108, 255, 0.45);
+  background:
+    repeating-linear-gradient(135deg, rgba(181, 108, 255, 0.12) 0 10px, transparent 10px 22px),
+    linear-gradient(180deg, rgba(181, 108, 255, 0.2), rgba(255, 255, 255, 0.02) 58%),
+    #151323;
+}
+
+.result-scene.win.strike-partial {
+  border-color: rgba(255, 94, 87, 0.5);
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 94, 87, 0.12) 0 10px, transparent 10px 22px),
+    linear-gradient(180deg, rgba(255, 94, 87, 0.22), rgba(255, 255, 255, 0.02) 58%),
+    #21141b;
+}
+
+.result-scene.win.strike-total,
+.result-scene.win.strike-legend {
+  border-color: rgba(246, 200, 95, 0.58);
+  background:
+    repeating-linear-gradient(135deg, rgba(246, 200, 95, 0.16) 0 10px, transparent 10px 22px),
+    linear-gradient(180deg, rgba(246, 200, 95, 0.26), rgba(255, 255, 255, 0.03) 58%),
+    #211d14;
+}
+
+.result-scene.win.strike-legend::before {
+  content: "";
+  position: absolute;
+  inset: -40px;
+  z-index: 0;
+  background:
+    linear-gradient(90deg, transparent 0 42%, rgba(246, 200, 95, 0.2) 49% 51%, transparent 58% 100%),
+    linear-gradient(0deg, transparent 0 44%, rgba(255, 240, 168, 0.18) 49% 51%, transparent 56% 100%);
+  animation: victoryGlow 1.7s linear infinite;
+}
+
+.result-scene.win.strike-legend {
+  box-shadow:
+    inset 0 0 28px rgba(246, 200, 95, 0.3),
+    0 0 22px rgba(246, 200, 95, 0.22);
+}
+
+.result-scene.win.strike-legend .victory-art {
+  z-index: 1;
+}
+
+@keyframes victoryGlow {
+  from {
+    transform: rotate(0deg) scale(1.05);
+  }
+
+  to {
+    transform: rotate(360deg) scale(1.05);
+  }
 }
 
 .result-scene::after {
@@ -1107,7 +1230,8 @@ html.has-mobile-controls .mobile-controls {
       <div class="guide-section">
         <h3>신고 점수</h3>
         <p>신고 수는 랜덤이 아니라 플레이 로그로 계산됩니다.</p>
-        <p>아군 처리, 완벽 배신, 콤보, 힐러가 살린 아군 재처리, 미션 성공, 높은 의심도가 신고 수를 올립니다.</p>
+        <p>아군 처리, 완벽 배신, 콤보, 힐러가 살린 아군 재처리, 미션 성공, 높은 의심도, 파업 명분이 신고 수를 올립니다.</p>
+        <p>방패를 들고 버티면 노동 게이지가 쌓이고, 팀원이 책임을 떠넘기는 채팅이 나오면 명분 게이지가 찹니다.</p>
         <p>승리 시 보스 HP가 낮을수록 점수 배율이 크게 붙습니다. 마지막 1명을 언제 정리할지가 최고점 핵심입니다.</p>
         <p>반대로 진짜 공격을 방패로 막으면 신고 수가 조금 줄어듭니다.</p>
       </div>
@@ -1132,12 +1256,18 @@ html.has-mobile-controls .mobile-controls {
         <p class="ranking-title">오늘의 랭킹 <span class="ranking-date" id="rankingDate">--</span></p>
         <div class="ranking-list" id="rankingList"></div>
       </div>
+      <div class="ranking-box lore-box">
+        <p class="ranking-title">게임 배경 <span class="ranking-date">탱커노동조합 선언문</span></p>
+        <p class="lore-text"><b>탱커</b>는 어느 게임에서나 가장 앞에 서지만, 칭찬은 딜러에게 가고 책임은 늘 방패 든 사람에게 돌아옵니다.</p>
+        <p class="lore-text">파티원은 뒤에서 안전하게 딜과 힐을 넣고, 탱커에게는 길 열기, 위치 잡기, 패턴 외우기, 사망 책임까지 한꺼번에 요구합니다.</p>
+        <p class="lore-text">이 게임은 그런 울분을 블랙 코미디로 뒤집은 아케이드입니다. 보스를 너무 빨리 잡기 전에 파티를 정리하고, 마지막까지 들키지 않는 파업 기록을 남기세요.</p>
+      </div>
       <button class="secondary" id="rankingBackBtn">돌아가기</button>
     </div>
   </section>
 
   <section class="overlay hidden" id="end">
-    <div class="panel result-panel">
+    <div class="panel result-panel" id="endPanel">
       <p class="kicker" id="endKicker">결과</p>
       <h2 id="endTitle">작전 종료</h2>
       <p class="copy" id="endCopy"></p>
@@ -1460,6 +1590,29 @@ html.has-mobile-controls .mobile-controls {
     ]
   ];
 
+  const blameChats = [
+    "딜러: 탱커가 각을 안 열어줘서 딜 못함",
+    "딜러: 방패 위치 때문에 내 딜로스 남",
+    "딜러: 탱커가 앞으로 안 가서 답답함",
+    "딜러: 내가 맞은 건 시야 안 잡아준 탱커 탓",
+    "딜러: 탱커님 제가 캐리 중인 거 보이죠?",
+    "암살자: 뒤 봐달랬는데 왜 앞만 봄?",
+    "암살자: 내가 죽은 건 진입각을 안 만든 탱커 탓",
+    "암살자: 탱커가 어그로 못 끌어서 내가 맞음",
+    "암살자: 방패 열고 닫는 타이밍 이상함",
+    "암살자: 살려달랬는데 노동 거부함?",
+    "힐러: 탱커님 힐 비용 청구합니다",
+    "힐러: 탱커 피만 보다가 팀이 다 맞음",
+    "힐러: 이건 힐 문제가 아니라 탱 문제",
+    "힐러: 방패 뒤에 있으라더니 왜 사라짐?",
+    "힐러: 보호 안 해주면 힐도 파업합니다",
+    "마법사: 채널링 끊긴 거 탱커 책임",
+    "마법사: 큰 주문 쓰는데 방패가 내려감",
+    "마법사: 안전거리라며요?",
+    "마법사: 탱커가 고정 안 해줘서 계산 꼬임",
+    "마법사: 저 정도면 보스보다 탱커가 변수"
+  ];
+
   const keys = {
     left: false,
     right: false,
@@ -1509,6 +1662,10 @@ html.has-mobile-controls .mobile-controls {
       revivedKills: 0,
       tankHits: 0,
       roleScore: 0,
+      laborLoad: 0,
+      politicsHeat: 0,
+      politicsTriggers: 0,
+      politicsCooldown: 0,
       mission: null,
       missionBonus: 0,
       missionsDone: 0,
@@ -1770,7 +1927,9 @@ html.has-mobile-controls .mobile-controls {
     }
     game.reports = calculateReports(win, reason, alive);
     const grade = resultGrade(win, reason, alive);
+    const victoryClass = win ? `strike-${grade.tier}` : "";
 
+    document.getElementById("endPanel").className = `panel result-panel ${win ? `win-result ${victoryClass}` : ""}`.trim();
     document.getElementById("endKicker").textContent = win ? "최고의 플레이" : "게임 오버";
     document.getElementById("endTitle").textContent = grade.title;
     document.getElementById("endCopy").textContent = grade.copy;
@@ -1780,7 +1939,7 @@ html.has-mobile-controls .mobile-controls {
         ? "시스템 : 계정 잔고가 -219,720,000원입니다."
         : "시스템 : 사용자의 계정이 영구정지되었습니다.";
     document.getElementById("systemNotice").textContent = systemMessage;
-    document.getElementById("resultScene").className = `result-scene ${win ? "win" : reason === "boss" ? "debt" : "lose"}`;
+    document.getElementById("resultScene").className = `result-scene ${win ? `win ${victoryClass}` : reason === "boss" ? "debt" : "lose"}`;
     document.getElementById("statKills").textContent = String(game.killed);
     document.getElementById("statAlive").textContent = String(alive);
     document.getElementById("statReports").textContent = String(game.reports);
@@ -1993,50 +2152,58 @@ html.has-mobile-controls .mobile-controls {
     if (reason === "tank") {
       return {
         title: "자업자득",
-        copy: "방패를 내리는 순간 탱커가 직접 맞았습니다.\n팀원이 실력미달을 사유로 고의트롤로 신고했습니다."
+        copy: "방패를 내리는 순간 탱커가 직접 맞았습니다.\n팀원이 실력미달을 사유로 고의트롤로 신고했습니다.",
+        tier: "lose"
       };
     }
     if (reason === "boss") {
       return {
         title: "착한 탱커",
-        copy: "보스를 쓰러뜨렸습니다. 팀원은 각자 보상을 챙겨갔고 탱커에게는 딜과 힐 비용을 요구했습니다."
+        copy: "보스를 쓰러뜨렸습니다. 팀원은 각자 보상을 챙겨갔고 탱커에게는 딜과 힐 비용을 요구했습니다.",
+        tier: "lose"
       };
     }
     if (reason === "suspicion") {
       return {
         title: "너무 노골적",
-        copy: "탱커노조 소속원임을 들켰습니다.\n팀원이 당신을 고의 트롤로 신고했습니다."
+        copy: "탱커노조 소속원임을 들켰습니다.\n팀원이 당신을 고의 트롤로 신고했습니다.",
+        tier: "lose"
       };
     }
     if (win && game.killed >= CONFIG.highScoreKills && game.suspicion >= 80) {
       return {
-        title: "POTG: 완전범죄",
-        copy: "의심은 끝까지 치솟았지만 증거는 방패 뒤에 남았습니다."
+        title: "탱커노조의\n위대한 승리",
+        copy: "POTG 기록. 의심은 끝까지 치솟았지만 증거는 방패 뒤에 남았습니다.",
+        tier: "legend"
       };
     }
     if (game.reports >= 900) {
       return {
         title: "탱커노조의\n위대한 승리",
-        copy: `생존자 ${alive}명. 신고함은 터졌고 보스보다 팀 채팅이 더 뜨겁습니다.`
+        copy: `최고점 파업. 생존자 ${alive}명, 신고함은 터졌고 보스보다 팀 채팅이 더 뜨겁습니다.`,
+        tier: "legend"
       };
     }
     if (game.reports >= 550) {
       return {
-        title: "방패 보험 사기범",
-        copy: "막을 때는 막고 열 때는 열었습니다. 알리바이와 배신이 꽤 균형 잡혔습니다."
+        title: "전면 파업",
+        copy: "막을 때는 막고 열 때는 열었습니다. 알리바이와 배신이 꽤 균형 잡혔습니다.",
+        tier: "total"
       };
     }
     if (game.reports >= 250) {
       return {
-        title: "수상한 탱커",
-        copy: "몇 번은 우연처럼 보였지만 채팅창은 이미 기억하고 있습니다."
+        title: "부분 파업",
+        copy: "몇 번은 우연처럼 보였지만 채팅창은 이미 기억하고 있습니다.",
+        tier: "partial"
       };
     }
     return {
-      title: win ? "조용한 배신자" : "미완성 작전",
+      title: win ? "경고 파업" : "미완성 작전",
       copy: win
-        ? "보스는 살아 있고 파티는 조용합니다. 신고 수는 낮지만 일은 끝났습니다."
-        : "생존자가 남았습니다. 작전은 끝났고 신고 버튼은 아직 따뜻합니다."
+        ? "작전은 성공했지만 파업 강도는 낮았습니다. 다음에는 조금 더 큰 물결을 노려보세요."
+        : "생존자가 남았습니다. 작전은 끝났고 신고 버튼은 아직 따뜻합니다.",
+      tier: win ? "warning" : "lose"
     };
   }
 
@@ -2050,6 +2217,8 @@ html.has-mobile-controls .mobile-controls {
       + game.revivedKills * 15
       + game.revivals * 6
       + game.missionBonus
+      + game.politicsTriggers * 32
+      + Math.floor(game.laborLoad * 0.35)
       + Math.floor(game.suspicion * 0.7)
       - game.shieldBlocks * 4;
 
@@ -2093,6 +2262,7 @@ html.has-mobile-controls .mobile-controls {
 
     updatePlayer(dt);
     updateTrust(dt);
+    updateLabor(dt);
     updateSpawns(dt);
     updateAllies(dt);
     updateBossPressure(dt);
@@ -2169,6 +2339,18 @@ html.has-mobile-controls .mobile-controls {
     }
   }
 
+  function updateLabor(dt) {
+    if (game.mode !== "play" || game.ended) return;
+    game.politicsCooldown = Math.max(0, game.politicsCooldown - dt);
+    const allies = livingAllies().length;
+    if (game.player.shield) {
+      const pressure = game.attackClock < 0.85 ? 4 : 0;
+      game.laborLoad = clamp(game.laborLoad + (5 + allies * 0.75 + pressure) * dt, 0, 100);
+    } else {
+      game.laborLoad = clamp(game.laborLoad - 7 * dt, 0, 100);
+    }
+  }
+
   function updateMission(dt) {
     game.blockWindow = Math.max(0, game.blockWindow - dt);
     if (game.mode !== "play" || game.ended || game.mission) return;
@@ -2216,6 +2398,23 @@ html.has-mobile-controls .mobile-controls {
 
   function reduceSuspicion(amount) {
     game.suspicion = clamp(game.suspicion - amount, 0, CONFIG.suspicionMax);
+  }
+
+  function addPolitics(amount, label = "파업 명분") {
+    if (amount <= 0 || game.mode !== "play" || game.ended) return;
+    game.politicsHeat += amount;
+    while (game.politicsHeat >= 100) {
+      game.politicsHeat -= 100;
+      game.politicsTriggers += 1;
+      addFloating("명분 확보 +32", W / 2, 154, COLORS.gold);
+      addChat("시스템: 파업 명분 확보");
+    }
+    if (label) addFloating(label, W - 70, 108, COLORS.gold);
+  }
+
+  function addBlameChat(text = randomPick(blameChats)) {
+    addChat(text);
+    addPolitics(18, "정치질 명분");
   }
 
   function prepareScatterAllies() {
@@ -2405,8 +2604,15 @@ html.has-mobile-controls .mobile-controls {
     if (game.nextChat <= 0) {
       game.nextChat = random(1.8, 3.2);
       const hpRatio = game.boss.hp / game.boss.maxHp;
+      const allies = livingAllies();
+      const blameChance = game.suspicion > 45 || game.trust < 30 || (!game.player.shield && game.player.shieldRelease > CONFIG.betrayalLate);
+      if (allies.length > 0 && game.politicsCooldown <= 0 && blameChance && Math.random() < 0.45) {
+        game.politicsCooldown = random(3.2, 5.4);
+        addBlameChat();
+        return;
+      }
       const allyLine = randomAllyChat();
-      if (hpRatio < 0.35 && livingAllies().length > 0 && Math.random() < 0.34) addChat("보스 피 얼마 안 남음");
+      if (hpRatio < 0.35 && allies.length > 0 && Math.random() < 0.34) addChat("보스 피 얼마 안 남음");
       else if (allyLine && Math.random() < 0.78) addChat(allyLine);
       else if (game.player.shield) addChat(randomPick(chatIdle));
     }
@@ -2513,7 +2719,9 @@ html.has-mobile-controls .mobile-controls {
       addFloating("막힘", projectile.x, shieldY - 10, COLORS.blue);
       game.shieldBlocks += 1;
       game.blockWindow = 2;
+      game.laborLoad = clamp(game.laborLoad + 22, 0, 100);
       reduceSuspicion(16);
+      addPolitics(12, "알리바이 명분");
       addFloating("알리바이", game.player.x, game.player.y - 72, COLORS.blue);
       addChat("이번엔 막았네");
       return true;
@@ -2579,6 +2787,7 @@ html.has-mobile-controls .mobile-controls {
     if (killedNow >= 2) {
       game.comboWindow = 0.22;
       game.comboKills += killedNow;
+      addPolitics(10 + killedNow * 4, null);
     }
     if (killedNow >= 3) {
       completeMission("combo3");
@@ -2595,16 +2804,19 @@ html.has-mobile-controls .mobile-controls {
       game.trust = clamp(game.trust - 2, 0, 100);
       reduceSuspicion(4);
       addFloating("배신 성공", ally.x, ally.y - 38, COLORS.gold);
+      addPolitics(8, null);
       if (game.blockWindow > 0) completeMission("blockBetray");
     } else if (quality === "early") {
       game.earlyBetrayals += 1;
       game.trust = clamp(game.trust - 8, 0, 100);
       addSuspicion(24, ally.x, ally.y - 38, "너무 빠름");
+      addPolitics(12, null);
       addChat("방패 너무 빨리 내림");
     } else {
       game.lateBetrayals += 1;
       game.trust = clamp(game.trust - 6, 0, 100);
       addSuspicion(18, ally.x, ally.y - 38, "수상함");
+      addPolitics(12, null);
       addChat("왜 계속 열려 있음?");
     }
 
@@ -2817,6 +3029,8 @@ html.has-mobile-controls .mobile-controls {
     ctx.fillRect(76, 92, Math.max(0, 196 * trustRatio), 9);
     ctx.strokeStyle = "rgba(255, 255, 255, 0.32)";
     ctx.strokeRect(76.5, 92.5, 195, 8);
+    drawText(`명분 ${Math.floor(game.politicsHeat)}%`, W - 26, 84, 9, COLORS.gold, "right");
+    drawText(`노동 ${Math.floor(game.laborLoad)}%`, W - 26, 98, 9, COLORS.muted, "right");
 
     const missionText = game.mission ? game.mission.text.replace("미션: ", "") : "미션 대기";
     drawText(`${bossPhaseLabel()} · ${missionText}`, 24, 115, 9, game.mission ? COLORS.gold : COLORS.muted, "left");
