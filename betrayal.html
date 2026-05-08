@@ -946,7 +946,7 @@ html.has-mobile-controls .mobile-controls {
       <div class="guide-section">
         <h3>목표</h3>
         <p>보스 HP가 0이 되기 전에 현장에 남은 아군을 모두 탈락시키면 승리합니다.</p>
-        <p>아군은 계속 1명씩 보충됩니다. 너무 빨리 전멸시키면 승리해도 점수가 낮고, 보스가 먼저 쓰러지면 게임오버입니다.</p>
+        <p>아군은 2초마다 1명씩 보충됩니다. 너무 빨리 전멸시키면 승리해도 점수가 낮고, 보스가 먼저 쓰러지면 게임오버입니다.</p>
       </div>
 
       <div class="guide-section">
@@ -1130,7 +1130,7 @@ html.has-mobile-controls .mobile-controls {
 
   const CONFIG = {
     bossHp: 4600,
-    spawnEvery: 1,
+    spawnEvery: 2,
     maxLivingAllies: 8,
     highScoreKills: 30,
     playerY: 448,
