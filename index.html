@@ -67,25 +67,25 @@ canvas {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: max(14px, env(safe-area-inset-bottom));
+  bottom: max(18px, env(safe-area-inset-bottom));
   z-index: 8;
   display: none;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 0 18px;
+  padding: 0 20px;
   pointer-events: none;
   touch-action: none;
 }
 
 .mobile-move {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   pointer-events: auto;
 }
 
 .mobile-btn {
-  width: 64px;
-  height: 64px;
+  width: 76px;
+  height: 76px;
   display: grid;
   place-items: center;
   pointer-events: auto;
@@ -99,6 +99,7 @@ canvas {
   line-height: 1;
   user-select: none;
   -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
   touch-action: none;
   backdrop-filter: blur(6px);
 }
@@ -110,12 +111,12 @@ canvas {
 }
 
 .mobile-shield {
-  width: 92px;
-  height: 92px;
+  width: 112px;
+  height: 112px;
   border-color: rgba(101, 183, 255, 0.48);
   color: #17120a;
   background: rgba(246, 200, 95, 0.84);
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .mobile-shield.is-active {
@@ -921,10 +922,10 @@ html.has-mobile-controls .mobile-controls {
 
   <div class="mobile-controls" aria-label="모바일 조작">
     <div class="mobile-move">
-      <button class="mobile-btn" id="touchLeft" type="button" aria-label="왼쪽 이동">‹</button>
-      <button class="mobile-btn" id="touchRight" type="button" aria-label="오른쪽 이동">›</button>
+      <button class="mobile-btn" id="touchLeft" type="button" aria-label="왼쪽 이동" aria-pressed="false">‹</button>
+      <button class="mobile-btn" id="touchRight" type="button" aria-label="오른쪽 이동" aria-pressed="false">›</button>
     </div>
-    <button class="mobile-btn mobile-shield" id="touchShield" type="button" aria-label="방패 들기">방패</button>
+    <button class="mobile-btn mobile-shield" id="touchShield" type="button" aria-label="방패 들기" aria-pressed="false">방패</button>
   </div>
 
   <section class="overlay" id="menu">
@@ -1099,7 +1100,14 @@ html.has-mobile-controls .mobile-controls {
   const menu = document.getElementById("menu");
   const guide = document.getElementById("guide");
   const end = document.getElementById("end");
+  const mobileControls = document.querySelector(".mobile-controls");
   const mobileControlsQuery = window.matchMedia("(max-width: 720px)");
+  const mobileButtons = {
+    left: document.getElementById("touchLeft"),
+    right: document.getElementById("touchRight"),
+    shield: document.getElementById("touchShield")
+  };
+  const activePointers = new Map();
 
   const COLORS = {
     floor: "#1a2030",
@@ -1373,46 +1381,120 @@ html.has-mobile-controls .mobile-controls {
     end.classList.add("hidden");
   });
 
-  bindHoldButton("touchLeft", "left");
-  bindHoldButton("touchRight", "right");
-  bindHoldButton("touchShield", "shield");
+  bindMobileControls();
 
-  function bindHoldButton(id, key) {
-    const button = document.getElementById(id);
-    if (!button) return;
+  function bindMobileControls() {
+    if (!mobileControls) return;
 
-    const setActive = (active) => {
-      keys[key] = active;
-      button.classList.toggle("is-active", active);
-    };
-
-    button.addEventListener("pointerdown", (event) => {
-      event.preventDefault();
-      try {
-        button.setPointerCapture?.(event.pointerId);
-      } catch {
-        // Synthetic pointer events in automated tests may not own a pointer id.
-      }
-      setActive(true);
+    ["touchstart", "touchmove", "touchend", "touchcancel"].forEach((type) => {
+      mobileControls.addEventListener(type, handleTouchControls, { passive: false });
     });
 
+    mobileControls.addEventListener("pointerdown", handlePointerStart);
+    mobileControls.addEventListener("pointermove", handlePointerMove);
     ["pointerup", "pointercancel", "lostpointercapture"].forEach((type) => {
-      button.addEventListener(type, (event) => {
-        event.preventDefault();
-        setActive(false);
-      });
+      mobileControls.addEventListener(type, handlePointerEnd);
     });
 
-    button.addEventListener("contextmenu", (event) => event.preventDefault());
+    Object.values(mobileButtons).forEach((button) => {
+      button?.addEventListener("contextmenu", (event) => event.preventDefault());
+    });
+  }
+
+  function handleTouchControls(event) {
+    event.preventDefault();
+    activePointers.clear();
+    setMobileInput(readTouchInput(event.touches));
+  }
+
+  function handlePointerStart(event) {
+    if (ignoreTouchPointer(event)) return;
+    const key = controlKeyAt(event.clientX, event.clientY);
+    if (!key) return;
+    event.preventDefault();
+    activePointers.set(event.pointerId, key);
+    try {
+      event.target.setPointerCapture?.(event.pointerId);
+    } catch {}
+    setMobileInput(readPointerInput());
+  }
+
+  function handlePointerMove(event) {
+    if (ignoreTouchPointer(event) || !activePointers.has(event.pointerId)) return;
+    event.preventDefault();
+    const key = controlKeyAt(event.clientX, event.clientY);
+    if (key) activePointers.set(event.pointerId, key);
+    else activePointers.delete(event.pointerId);
+    setMobileInput(readPointerInput());
+  }
+
+  function handlePointerEnd(event) {
+    if (ignoreTouchPointer(event)) return;
+    if (!activePointers.has(event.pointerId)) return;
+    event.preventDefault();
+    activePointers.delete(event.pointerId);
+    setMobileInput(readPointerInput());
+  }
+
+  function ignoreTouchPointer(event) {
+    return event.pointerType === "touch" && "ontouchstart" in window;
+  }
+
+  function readTouchInput(touches) {
+    const next = { left: false, right: false, shield: false };
+    Array.from(touches).forEach((touch) => {
+      const key = controlKeyAt(touch.clientX, touch.clientY);
+      if (key) next[key] = true;
+    });
+    return next;
+  }
+
+  function readPointerInput() {
+    const next = { left: false, right: false, shield: false };
+    activePointers.forEach((key) => {
+      next[key] = true;
+    });
+    return next;
+  }
+
+  function controlKeyAt(x, y) {
+    const hitSlop = 22;
+    let bestKey = null;
+    let bestDistance = Infinity;
+    Object.entries(mobileButtons).forEach(([key, button]) => {
+      if (!button) return;
+      const rect = button.getBoundingClientRect();
+      if (
+        x < rect.left - hitSlop ||
+        x > rect.right + hitSlop ||
+        y < rect.top - hitSlop ||
+        y > rect.bottom + hitSlop
+      ) {
+        return;
+      }
+      const distance = Math.hypot(x - (rect.left + rect.width / 2), y - (rect.top + rect.height / 2));
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestKey = key;
+      }
+    });
+    return bestKey;
+  }
+
+  function setMobileInput(next) {
+    keys.left = next.left;
+    keys.right = next.right;
+    keys.shield = next.shield;
+    Object.entries(mobileButtons).forEach(([key, button]) => {
+      const active = Boolean(next[key]);
+      button?.classList.toggle("is-active", active);
+      button?.setAttribute("aria-pressed", active ? "true" : "false");
+    });
   }
 
   function releaseAllInputs() {
-    keys.left = false;
-    keys.right = false;
-    keys.shield = false;
-    document.querySelectorAll(".mobile-btn.is-active").forEach((button) => {
-      button.classList.remove("is-active");
-    });
+    activePointers.clear();
+    setMobileInput({ left: false, right: false, shield: false });
   }
 
   function updateMobileControlMode() {
