@@ -1676,9 +1676,14 @@ html.has-mobile-controls .mobile-controls {
   function tryPlayBgm() {
     if (bgm.muted) return;
     bgmStarted = true;
-    bgm.volume = 0.46;
+    bgm.volume = 0.23;
     const playAttempt = bgm.play();
     if (playAttempt?.catch) playAttempt.catch(() => {});
+  }
+
+  function stopBgm() {
+    bgm.pause();
+    bgmStarted = false;
   }
 
   function toggleBgm() {
@@ -1993,6 +1998,7 @@ html.has-mobile-controls .mobile-controls {
     game.mode = "end";
     game.endReason = reason;
     releaseAllInputs();
+    stopBgm();
 
     const alive = livingAllies().length;
     if (win && game.mission?.id === "highSuspicionWin" && game.suspicion >= 70) {
